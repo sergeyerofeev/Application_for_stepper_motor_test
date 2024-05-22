@@ -33,8 +33,8 @@ void main() async {
   const initialSize = Size(500, 800);
   WindowOptions windowOptions = const WindowOptions(
     size: initialSize,
-    minimumSize: initialSize,
-    maximumSize: initialSize,
+    //minimumSize: initialSize,
+    //maximumSize: initialSize,
     skipTaskbar: false,
     title: 'Stepper motor test',
     titleBarStyle: TitleBarStyle.hidden, // Скрыть панель с кнопками Windows

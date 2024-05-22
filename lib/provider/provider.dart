@@ -7,3 +7,6 @@ final storageProvider = Provider<IDataBase>((ref) => throw UnimplementedError())
 
 // Провайдер состояния подключения USB
 final hidProvider = StateProvider.autoDispose<bool>((ref) => false);
+
+// Провайдер значения ARR регистра
+final arrProvider = StateProvider.autoDispose<double>((ref) => 0.0);

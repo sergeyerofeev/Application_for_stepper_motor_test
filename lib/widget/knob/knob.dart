@@ -31,6 +31,7 @@ class Knob extends StatelessWidget {
   final double _scaleHeight;
   final double _scaleMin;
   final double _scaleMax;
+  final double _scaleFontSize;
 
   const Knob({
     super.key,
@@ -40,14 +41,15 @@ class Knob extends StatelessWidget {
     int knobStartAngle = 120,
     int knobEndAngle = 60,
     Color knobBackgroundColor = Colors.grey,
-    List<Color> shadowColors = const [Colors.black54, Colors.white],
-    Offset knobShadowOffset = const Offset(1, 2),
+    List<Color> shadowColors = const [Colors.black54, Colors.black26],
+    Offset knobShadowOffset = const Offset(2, 2),
     double knobShadowBlurRadius = 1.0,
     double knobShadowSpreadRadius = 3.0,
     double indicatorDepression = 4.0,
     EdgeInsets indicatorMargin = const EdgeInsets.all(10.0),
     double scaleMin = 0,
-    double scaleMax = 300,
+    double scaleMax = 4.0,
+    double scaleFontSize = 16,
   })  : _scaleWidth = scaleDiameter,
         _scaleHeight = scaleDiameter,
         _knobWidth = knobDiameter,
@@ -63,7 +65,8 @@ class Knob extends StatelessWidget {
         _indicatorDepression = indicatorDepression,
         _indicatorMargin = indicatorMargin,
         _scaleMin = scaleMin,
-        _scaleMax = scaleMax;
+        _scaleMax = scaleMax,
+        _scaleFontSize = scaleFontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +89,7 @@ class Knob extends StatelessWidget {
                 scaleMax: _scaleMax,
                 scaleStartAngle: _knobStartAngle,
                 scaleEndAngle: _knobEndAngle,
+                scaleFontSize: _scaleFontSize,
               ),
             ),
           ),
@@ -116,6 +120,8 @@ class Knob extends StatelessWidget {
           child: KnobGestureDetector(
             knobStartAngle: _knobStartAngle,
             knobEndAngle: _knobEndAngle,
+            scaleMin: _scaleMin,
+            scaleMax: _scaleMax,
             indicatorDiameter: _indicatorDiameter,
             indicatorMargin: _indicatorMargin,
             indicatorDepression: _indicatorDepression,

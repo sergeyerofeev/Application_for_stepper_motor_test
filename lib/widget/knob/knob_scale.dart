@@ -6,16 +6,19 @@ class KnobScale extends CustomPainter {
   final double _endValue;
   final int _startAngle;
   final int _endAngle;
+  final double _fontSize;
 
   KnobScale({
     required double scaleMin,
     required double scaleMax,
     required int scaleStartAngle,
     required int scaleEndAngle,
+    required double scaleFontSize,
   })  : _startValue = scaleMin,
         _endValue = scaleMax,
         _startAngle = scaleStartAngle,
-        _endAngle = scaleEndAngle;
+        _endAngle = scaleEndAngle,
+        _fontSize = scaleFontSize;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -31,9 +34,10 @@ class KnobScale extends CustomPainter {
 
     // Максимильное количество тиков на шкале
     const maxTick = 100;
-
+    // Величина для одного деления шкалы
     double valueTick = (_endValue - _startValue) / (1.0 * maxTick);
-
+    // Количество цифр после запятой при выводе числа на шкалу
+    final fractionDigits = (valueTick < 0.1) ? 1 : 0;
     for (int i = 0; i <= maxTick; i++) {
       final angle = (fullScale / maxTick * i + _startAngle) * pi / 180;
 
@@ -46,18 +50,18 @@ class KnobScale extends CustomPainter {
         // Надписи над линиями
         final textPainter = TextPainter(
           text: TextSpan(
-              text: '${_startValue + (valueTick * i)}',
-              style: const TextStyle(
+              text: (_startValue + (valueTick * i)).toStringAsFixed(fractionDigits).replaceFirst('.', ','),
+              style: TextStyle(
                 color: Colors.grey,
-                fontSize: 20,
+                fontSize: _fontSize,
                 fontWeight: FontWeight.bold,
               )),
           textDirection: TextDirection.ltr,
         );
         textPainter.layout();
         final textOffset = Offset(
-          center.dx + 1.22 * radius * cos(angle) - textPainter.width / 2,
-          center.dy + 1.15 * radius * sin(angle) - textPainter.height / 2,
+          center.dx + 1.15 * radius * cos(angle) - textPainter.width / 2,
+          center.dy + 1.1 * radius * sin(angle) - textPainter.height / 2,
         );
         textPainter.paint(canvas, textOffset);
       } else if (i % 5 == 0) {

@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../main.dart';
@@ -47,8 +50,31 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    final arrValue = ref.watch(arrProvider);
+
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: const MaterialStatePropertyAll<Color>(Colors.white),
+/*            foregroundColor: const MaterialStatePropertyAll<Color>(Colors.black),*/
+            surfaceTintColor: const MaterialStatePropertyAll<Color>(Colors.white),
+            padding: MaterialStateProperty.all(const EdgeInsets.all(10.0)),
+            side: MaterialStateProperty.all(const BorderSide(color: Colors.grey, width: 2)),
+            shape: MaterialStateProperty.all(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(3.0),
+              ),
+            ),
+            overlayColor: MaterialStateProperty.resolveWith(
+              (states) {
+                return states.contains(MaterialState.pressed) ? Colors.grey : Colors.white;
+              },
+            ),
+          ),
+        ),
+      ),
       home: DecoratedBox(
         decoration: BoxDecoration(
           color: Color(0xFFFEFEFE),
@@ -61,9 +87,48 @@ class _MyAppState extends ConsumerState<MyApp> {
           backgroundColor: Colors.transparent,
           appBar: DraggebleAppBar(),
           body: SizedBox.expand(
-            child: Knob(
-              knobDiameter: 240,
-              scaleDiameter: 330,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Knob(
+                  knobDiameter: 240,
+                  scaleDiameter: 330,
+                  indicatorDiameter: 35,
+                  scaleFontSize: 18,
+                ),
+                SizedBox(height: 20),
+                Container(
+                  width: 380,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed:
+                            (arrValue > 0) ? () => ref.read(arrProvider.notifier).update((state) => state - 1) : null,
+                        child: const Text('-1'),
+                      ),
+                      SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed:
+                            (arrValue > 0) ? () => ref.read(arrProvider.notifier).update((state) => state - 10) : null,
+                        child: const Text('-10'),
+                      ),
+                      Spacer(),
+                      Text('$arrValue'),
+                      Spacer(),
+                      ElevatedButton(
+                        onPressed: () => ref.read(arrProvider.notifier).update((state) => state + 10),
+                        child: const Text('+10'),
+                      ),
+                      SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: () => ref.read(arrProvider.notifier).update((state) => state + 1),
+                        child: const Text('+1'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
