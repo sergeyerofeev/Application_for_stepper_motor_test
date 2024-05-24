@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../main.dart';
@@ -50,8 +47,6 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final arrValue = ref.watch(arrProvider);
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -75,7 +70,7 @@ class _MyAppState extends ConsumerState<MyApp> {
           ),
         ),
       ),
-      home: DecoratedBox(
+      home: const DecoratedBox(
         decoration: BoxDecoration(
           color: Color(0xFFFEFEFE),
           image: DecorationImage(
@@ -93,40 +88,10 @@ class _MyAppState extends ConsumerState<MyApp> {
                 Knob(
                   knobDiameter: 240,
                   scaleDiameter: 330,
+                  scaleMin: 20,
+                  scaleMax: 330,
                   indicatorDiameter: 35,
                   scaleFontSize: 18,
-                ),
-                SizedBox(height: 20),
-                Container(
-                  width: 380,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed:
-                            (arrValue > 0) ? () => ref.read(arrProvider.notifier).update((state) => state - 1) : null,
-                        child: const Text('-1'),
-                      ),
-                      SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed:
-                            (arrValue > 0) ? () => ref.read(arrProvider.notifier).update((state) => state - 10) : null,
-                        child: const Text('-10'),
-                      ),
-                      Spacer(),
-                      Text('$arrValue'),
-                      Spacer(),
-                      ElevatedButton(
-                        onPressed: () => ref.read(arrProvider.notifier).update((state) => state + 10),
-                        child: const Text('+10'),
-                      ),
-                      SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: () => ref.read(arrProvider.notifier).update((state) => state + 1),
-                        child: const Text('+1'),
-                      ),
-                    ],
-                  ),
                 ),
               ],
             ),

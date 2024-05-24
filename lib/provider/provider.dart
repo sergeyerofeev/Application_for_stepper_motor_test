@@ -9,4 +9,7 @@ final storageProvider = Provider<IDataBase>((ref) => throw UnimplementedError())
 final hidProvider = StateProvider.autoDispose<bool>((ref) => false);
 
 // Провайдер значения ARR регистра
-final arrProvider = StateProvider.autoDispose<double>((ref) => 0.0);
+final arrProvider = StateProvider.autoDispose<int>((ref) => 0);
+
+// Текущий угол поворота регулятора
+final turnProvider = StateProvider.autoDispose<int>((ref) => 0);

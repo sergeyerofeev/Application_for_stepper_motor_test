@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../provider/provider.dart';
 import 'knob_gesture_detector.dart';
 import 'knob_scale.dart';
 
-class Knob extends StatelessWidget {
+class Knob extends ConsumerStatefulWidget {
   // Общие
   final List<Color> _shadowColors;
 
@@ -48,7 +50,7 @@ class Knob extends StatelessWidget {
     double indicatorDepression = 4.0,
     EdgeInsets indicatorMargin = const EdgeInsets.all(10.0),
     double scaleMin = 0,
-    double scaleMax = 4.0,
+    double scaleMax = 300.0,
     double scaleFontSize = 16,
   })  : _scaleWidth = scaleDiameter,
         _scaleHeight = scaleDiameter,
@@ -69,63 +71,155 @@ class Knob extends StatelessWidget {
         _scaleFontSize = scaleFontSize;
 
   @override
+  ConsumerState<Knob> createState() => _KnobState();
+}
+
+class _KnobState extends ConsumerState<Knob> {
+  @override
+  void initState() {
+    Future(() {
+      ref.read(arrProvider.notifier).state = widget._scaleMin.toInt();
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: AlignmentDirectional.center,
+    final currentValue = ref.watch(arrProvider);
+    final fullScale = widget._scaleMax - widget._scaleMin;
+
+    return Column(
       children: [
-        // Шкала регулятора
-        Container(
-          width: _scaleWidth,
-          height: _scaleHeight,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.transparent,
-          ),
-          child: RepaintBoundary(
-            child: CustomPaint(
-              size: Size(_scaleWidth, _scaleWidth),
-              painter: KnobScale(
-                scaleMin: _scaleMin,
-                scaleMax: _scaleMax,
-                scaleStartAngle: _knobStartAngle,
-                scaleEndAngle: _knobEndAngle,
-                scaleFontSize: _scaleFontSize,
+        Stack(
+          alignment: AlignmentDirectional.center,
+          children: [
+            // Шкала регулятора
+            Container(
+              width: widget._scaleWidth,
+              height: widget._scaleHeight,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.transparent,
+              ),
+              child: RepaintBoundary(
+                child: CustomPaint(
+                  size: Size(widget._scaleWidth, widget._scaleWidth),
+                  painter: KnobScale(
+                    scaleMin: widget._scaleMin,
+                    scaleMax: widget._scaleMax,
+                    scaleStartAngle: widget._knobStartAngle,
+                    scaleEndAngle: widget._knobEndAngle,
+                    scaleFontSize: widget._scaleFontSize,
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-        // Ручка регулятора
-        Container(
-          width: _knobWidth,
-          height: _knobHeight,
-          decoration: BoxDecoration(
-            color: _knobBackgroundColor,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: _shadowColors[1],
-                offset: -_knobShadowOffset,
-                blurRadius: _knobShadowBlurRadius,
-                spreadRadius: _knobShadowSpreadRadius,
+            // Ручка регулятора
+            Container(
+              width: widget._knobWidth,
+              height: widget._knobHeight,
+              decoration: BoxDecoration(
+                color: widget._knobBackgroundColor,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: widget._shadowColors[1],
+                    offset: -widget._knobShadowOffset,
+                    blurRadius: widget._knobShadowBlurRadius,
+                    spreadRadius: widget._knobShadowSpreadRadius,
+                  ),
+                  BoxShadow(
+                    color: widget._shadowColors[0],
+                    offset: widget._knobShadowOffset,
+                    blurRadius: widget._knobShadowBlurRadius,
+                    spreadRadius: widget._knobShadowSpreadRadius,
+                  ),
+                ],
               ),
-              BoxShadow(
-                color: _shadowColors[0],
-                offset: _knobShadowOffset,
-                blurRadius: _knobShadowBlurRadius,
-                spreadRadius: _knobShadowSpreadRadius,
+              margin: const EdgeInsets.all(30.0),
+              child: KnobGestureDetector(
+                knobStartAngle: widget._knobStartAngle,
+                knobEndAngle: widget._knobEndAngle,
+                scaleMin: widget._scaleMin,
+                scaleMax: widget._scaleMax,
+                indicatorDiameter: widget._indicatorDiameter,
+                indicatorMargin: widget._indicatorMargin,
+                indicatorDepression: widget._indicatorDepression,
+                shadowColors: widget._shadowColors,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          // Ширину строки кнопок выбираем по размеру диаметра шкалы регулятора добавив 50 px
+          width: widget._scaleWidth + 50,
+          // Строка кнопок для дискретного управления
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: (currentValue > widget._scaleMin)
+                    ? () {
+                        if (currentValue - 1 < widget._scaleMin) {
+                          ref.read(arrProvider.notifier).state = widget._scaleMin.toInt();
+                          ref.read(turnProvider.notifier).state = -11;
+                        } else {
+                          ref.read(arrProvider.notifier).update((state) => state - 1);
+                          ref.read(turnProvider.notifier).state = -1;
+                        }
+                      }
+                    : null,
+                child: const Text('-1'),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: (currentValue > widget._scaleMin && fullScale > 10)
+                    ? () {
+                        if (currentValue - 10 < widget._scaleMin) {
+                          ref.read(arrProvider.notifier).state = widget._scaleMin.toInt();
+                          ref.read(turnProvider.notifier).state = -11;
+                        } else {
+                          ref.read(arrProvider.notifier).update((state) => state - 10);
+                          ref.read(turnProvider.notifier).state = -10;
+                        }
+                      }
+                    : null,
+                child: const Text('-10'),
+              ),
+              const Spacer(),
+              Text(currentValue.round().toString()),
+              const Spacer(),
+              ElevatedButton(
+                onPressed: (currentValue < widget._scaleMax && fullScale > 10)
+                    ? () {
+                        if (currentValue + 10 > widget._scaleMax) {
+                          ref.read(arrProvider.notifier).state = widget._scaleMax.toInt();
+                          ref.read(turnProvider.notifier).state = 11;
+                        } else {
+                          ref.read(arrProvider.notifier).update((state) => state + 10);
+                          ref.read(turnProvider.notifier).state = 10;
+                        }
+                      }
+                    : null,
+                child: const Text('+10'),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: (currentValue < widget._scaleMax)
+                    ? () {
+                        if (currentValue + 1 > widget._scaleMax) {
+                          ref.read(arrProvider.notifier).state = widget._scaleMax.toInt();
+                          ref.read(turnProvider.notifier).state = 11;
+                        } else {
+                          ref.read(arrProvider.notifier).update((state) => state + 1);
+                          ref.read(turnProvider.notifier).state = 1;
+                        }
+                      }
+                    : null,
+                child: const Text('+1'),
               ),
             ],
-          ),
-          margin: const EdgeInsets.all(30.0),
-          child: KnobGestureDetector(
-            knobStartAngle: _knobStartAngle,
-            knobEndAngle: _knobEndAngle,
-            scaleMin: _scaleMin,
-            scaleMax: _scaleMax,
-            indicatorDiameter: _indicatorDiameter,
-            indicatorMargin: _indicatorMargin,
-            indicatorDepression: _indicatorDepression,
-            shadowColors: _shadowColors,
           ),
         ),
       ],
