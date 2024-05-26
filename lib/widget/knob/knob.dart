@@ -188,7 +188,10 @@ class _KnobState extends ConsumerState<Knob> {
                 child: const Text('-10'),
               ),
               const Spacer(),
-              Text(currentValue.round().toString()),
+              Text(
+                currentValue.round().toString(),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
               const Spacer(),
               ElevatedButton(
                 onPressed: (currentValue < widget._scaleMax && fullScale > 10)

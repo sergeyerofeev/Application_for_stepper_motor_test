@@ -58,6 +58,8 @@ class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
   // Крайнее правое положение ручки регулятора в радианах
   late final double maxAngle;
 
+  late double currentPos;
+
   // Предыдущее положение ручки регулятора  в радианах, начальное положение равно _minAngle
   late double prevAngle;
 
@@ -95,7 +97,8 @@ class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
   _onPanUpdate(DragUpdateDetails details) {
     final touchPositionFromCenter = details.localPosition - centerOfGestureDetector;
     // Текущее положение ручки регулятора в радианах
-    final currentPos = touchPositionFromCenter.direction;
+    currentPos = touchPositionFromCenter.direction;
+
     // Блокируем перемещение по нижней траектории от _minAngle до _maxAngle
     if (currentPos < minAngle && currentPos > maxAngle) return;
 
@@ -133,7 +136,10 @@ class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
   @override
   Widget build(BuildContext context) {
     ref.listen<int>(turnProvider, (previous, next) {
+      if (next == 0) return;
+      // Отслеживаем нажатие кнопок
       changeRotate(next);
+      // Метод listen сработает только при изменении состояния, поэтому обнуляем
       ref.read(turnProvider.notifier).state = 0;
     });
     return LayoutBuilder(
@@ -169,26 +175,30 @@ class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
   }
 
   void changeRotate(int next) {
-    final temp = fullAngle * pi / 180;
     switch (next) {
-      case 1:
-        finalAngle += temp / fullValue;
-        indicatorRotate += temp / fullValue;
-      case 10:
-        finalAngle += temp / fullValue * 10;
-        indicatorRotate += temp / fullValue * 10;
       case 11:
-        finalAngle = temp + minAngle;
-        indicatorRotate = temp + minAngle;
-      case -1:
-        finalAngle -= temp / fullValue;
-        indicatorRotate -= temp / fullValue;
-      case -10:
-        finalAngle -= temp / fullValue * 10;
-        indicatorRotate -= temp / fullValue * 10;
+        // Переводим ручку регулятора в максимольное положение
+        finalAngle = maxAngle;
+        indicatorRotate = maxAngle;
       case -11:
+        // Переводим ручку регулятора в минимальное положение
         finalAngle = minAngle;
         indicatorRotate = minAngle;
+      default:
+        // Если next положительно, поворот по часовой, отрицательно - против часовой
+        final temp = fullAngle * pi / 180;
+        finalAngle += temp / fullValue * next;
+        indicatorRotate += temp / fullValue * next;
+    }
+    // Устанавливаем в переменные новые положения ручки регулятора, без этого
+    // ручка станет недоступна для вращения касанием экрана
+    if (finalAngle > pi) {
+      // Переход через границу с +pi на -pi
+      currentPos = finalAngle - 2 * pi;
+      prevAngle = finalAngle - 2 * pi;
+    } else {
+      currentPos = finalAngle;
+      prevAngle = finalAngle;
     }
   }
 }
