@@ -19,6 +19,7 @@ dependencies:
   flutter_launcher_icons: ^0.13.1
   window_manager: ^0.3.8
   flutter_single_instance: ^0.0.1
+  popup_menu_plus: ^0.0.6
 
 dev_dependencies:
   flutter_test:

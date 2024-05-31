@@ -49,9 +49,9 @@ void main() async {
       await windowManager.setPosition(Offset(dx, dy));
     }
     // Размещаем приложение поверх других окон
-    await windowManager.setAlwaysOnTop(true);
+    /*await windowManager.setAlwaysOnTop(true);
     await windowManager.show();
-    await windowManager.focus();
+    await windowManager.focus();*/
   });
 
   runApp(ProviderScope(
