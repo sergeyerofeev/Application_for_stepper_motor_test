@@ -7,95 +7,87 @@ import 'menu_config.dart';
 import 'menu_item.dart';
 import 'triangle_painter.dart';
 
-typedef MenuClickCallback = void Function(PopUpMenuItemProvider item);
-
-Rect getWidgetGlobalRect(GlobalKey key) {
-  assert(key.currentContext != null, '');
-
+/*Rect getWidgetGlobalRect(GlobalKey key) {
   RenderBox renderBox = key.currentContext!.findRenderObject() as RenderBox;
   var offset = renderBox.localToGlobal(Offset.zero);
   return Rect.fromLTWH(offset.dx, offset.dy, renderBox.size.width, renderBox.size.height);
-}
+}*/
 
 class PopupMenu {
+  final BuildContext _context;
+  final MenuConfig _config;
+  final List<MenuItem> _items;
+  final void Function(int) _onClickMenu;
+  final Duration _duration;
+
+  PopupMenu({
+    required BuildContext context,
+    required MenuConfig config,
+    required List<MenuItem> items,
+    required onClickMenu,
+    Duration duration = const Duration(milliseconds: 500),
+  })  : _context = context,
+        _config = config,
+        _items = items,
+        _duration = duration,
+        _onClickMenu = onClickMenu;
+
   OverlayEntry? _entry;
-  List<PopUpMenuItemProvider>? items;
-  Widget? content;
 
-  /// callback
-  final VoidCallback? onDismiss;
-  final MenuClickCallback? onClickMenu;
-  final VoidCallback? onShow;
-  final Duration? duration;
-
-  /// Cannot be null
-  BuildContext context;
-
-  /// It's showing or not.
+  // Видимость всплывающего меню
   bool _isShow = false;
 
-  bool get isShow => _isShow;
-
-  final MenuConfig config;
   Size? _screenSize;
-  AnimationController? animationController;
+  AnimationController? _animationController;
+  RowMenuLayout? _menuLayout;
 
-  PopupMenu(
-      {required this.context,
-      required this.config,
-      this.items,
-      this.content,
-      this.onClickMenu,
-      this.onDismiss,
-      this.onShow,
-      this.duration});
+  Rect getWidgetGlobalRect(GlobalKey key) {
+    RenderBox renderBox = key.currentContext!.findRenderObject() as RenderBox;
+    var offset = renderBox.localToGlobal(Offset.zero);
+    return Rect.fromLTWH(offset.dx, offset.dy, renderBox.size.width, renderBox.size.height);
+  }
 
-  RowMenuLayout? menuLayout;
-
-  void show({Rect? rect, GlobalKey? widgetKey}) {
-    final attachRect = rect ?? getWidgetGlobalRect(widgetKey!);
-
-    menuLayout = RowMenuLayout(
-      config: config,
-      items: items!,
-      onDismiss: dismiss,
-      onClickMenu: onClickMenu,
+  void show({required GlobalKey widgetKey}) {
+    final attachRect = getWidgetGlobalRect(widgetKey);
+    // Создаём объект с переданными элементами меню
+    _menuLayout = RowMenuLayout(
+      config: _config,
+      items: _items,
+      onDismiss: _dismiss,
+      onClickMenu: _onClickMenu,
     );
 
     LayoutP layoutp = _calculateOffset(
-      context,
+      _context,
       attachRect,
-      menuLayout!.width,
-      menuLayout!.height,
+      _menuLayout!.width,
+      _menuLayout!.height,
     );
 
-    if (duration != null && animationController == null) {
-      animationController = AnimationController(
-        duration: duration!,
-        vsync: Navigator.of(context).overlay!,
-      );
-    }
+    _animationController ??= AnimationController(
+      duration: _duration,
+      vsync: Navigator.of(_context).overlay!,
+    );
 
     _entry = OverlayEntry(builder: (context) {
-      return build(layoutp, menuLayout!);
+      return build(layoutp, _menuLayout!);
     });
 
-    Overlay.of(context).insert(_entry!);
+    Overlay.of(_context).insert(_entry!);
     _isShow = true;
-    onShow?.call();
   }
 
   Widget build(LayoutP layoutp, RowMenuLayout menu) {
     Widget child = GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
-        dismiss();
+        _dismiss();
       },
       onVerticalDragStart: (DragStartDetails details) {
-        dismiss();
+        _dismiss();
       },
       onHorizontalDragStart: (DragStartDetails details) {
-        dismiss();
+        _dismiss();
       },
       child: Material(
         color: Colors.transparent,
@@ -103,19 +95,24 @@ class PopupMenu {
           children: <Widget>[
             // triangle arrow
             Positioned(
-              left: layoutp.offset.dx,
-              top: layoutp.offset.dy + ((config.border?.width ?? 0) * (layoutp.isDown ? -1 : 1.5)),
+              left: layoutp._offset.dx,
+              top: layoutp._offset.dy + (_config.border.width * (layoutp._isDown ? -1 : 1.5)),
               child: menu.build(),
             ),
             Positioned(
-              left: layoutp.attachRect.left + layoutp.attachRect.width / 2.0 - 7.5,
-              top: layoutp.isDown
-                  ? layoutp.offset.dy + layoutp.height - ((config.border?.width ?? 0))
-                  : layoutp.offset.dy - config.arrowHeight + ((config.border?.width ?? 0)),
+              // Позиционируем треугольник всплывающего меню
+              left: layoutp._attachRect.left +
+                  (layoutp._attachRect.width - _config.triangleHeight - _config.border.width) / 2.0,
+              top: layoutp._isDown
+                  ? layoutp._offset.dy + layoutp._height - _config.border.width
+                  : layoutp._offset.dy - _config.triangleHeight + _config.border.width,
               child: CustomPaint(
-                size: Size(config.arrowHeight + (config.border?.width ?? 0) + 5,
-                    config.arrowHeight + (config.border?.width ?? 0)),
-                painter: TrianglePainter(isDown: layoutp.isDown, color: config.backgroundColor, border: config.border),
+                size: Size(
+                  _config.triangleHeight + _config.border.width,
+                  _config.triangleHeight + _config.border.width,
+                ),
+                painter:
+                    TrianglePainter(isDown: layoutp._isDown, color: _config.backgroundColor, border: _config.border),
               ),
             ),
             // menu content
@@ -123,9 +120,9 @@ class PopupMenu {
         ),
       ),
     );
-    if (animationController != null) {
-      child = AnimatedPopUpMenu(
-        controller: animationController!,
+    if (_animationController != null) {
+      child = _AnimatedPopUpMenu(
+        controller: _animationController!,
         child: child,
       );
     }
@@ -156,15 +153,14 @@ class PopupMenu {
     bool isDown = false;
     if (dy <= MediaQuery.of(context).padding.top + 10) {
       // The have not enough space above, show menu under the widget.
-      dy = config.arrowHeight + attachRect.height + attachRect.top;
+      dy = _config.triangleHeight + attachRect.height + attachRect.top;
       isDown = false;
     } else {
-      dy -= config.arrowHeight;
+      dy -= _config.triangleHeight;
       isDown = true;
     }
 
     return LayoutP(
-      width: contentWidth,
       height: contentHeight,
       attachRect: attachRect,
       offset: Offset(dx, dy),
@@ -172,56 +168,60 @@ class PopupMenu {
     );
   }
 
-  void dismiss() async {
+  void _dismiss() async {
     if (!_isShow) {
       // Remove method should only be called once
       return;
     }
-    if (animationController != null) {
-      await animationController!.reverse();
+    if (_animationController != null) {
+      await _animationController!.reverse();
     }
     _entry?.remove();
     _isShow = false;
-    onDismiss?.call();
   }
 }
 
 class LayoutP {
-  double width;
-  double height;
-  Offset offset;
-  Rect attachRect;
-  bool isDown;
+  final double _height;
+  final Offset _offset;
+  final Rect _attachRect;
+  final bool _isDown;
 
-  LayoutP({
-    required this.width,
-    required this.height,
-    required this.offset,
-    required this.attachRect,
-    required this.isDown,
-  });
+  const LayoutP({
+    required double height,
+    required Offset offset,
+    required Rect attachRect,
+    required bool isDown,
+  })  : _isDown = isDown,
+        _attachRect = attachRect,
+        _offset = offset,
+        _height = height;
 }
 
-class AnimatedPopUpMenu extends StatefulWidget {
-  final Widget child;
-  final AnimationController controller;
+class _AnimatedPopUpMenu extends StatefulWidget {
+  final Widget _child;
+  final AnimationController _controller;
 
-  const AnimatedPopUpMenu({required this.child, required this.controller, super.key});
+  const _AnimatedPopUpMenu({
+    required Widget child,
+    required AnimationController controller,
+  })  : _controller = controller,
+        _child = child;
 
   @override
-  State<AnimatedPopUpMenu> createState() => _AnimatedPopUpMenuState();
+  State<_AnimatedPopUpMenu> createState() => _AnimatedPopUpMenuState();
 }
 
-class _AnimatedPopUpMenuState extends State<AnimatedPopUpMenu> with SingleTickerProviderStateMixin {
-  late Animation<double> opacityAnimation;
+class _AnimatedPopUpMenuState extends State<_AnimatedPopUpMenu> with SingleTickerProviderStateMixin {
+  late Animation<double> _opacityAnimation;
 
-  AnimationController get controller => widget.controller;
+  AnimationController get controller => widget._controller;
 
   @override
   void initState() {
     super.initState();
 
-    opacityAnimation = CurvedAnimation(parent: controller, curve: Curves.easeIn);
+    _opacityAnimation = CurvedAnimation(parent: controller, curve: Curves.easeIn);
 
     controller.addListener(() {
       setState(() {});
@@ -239,8 +239,8 @@ class _AnimatedPopUpMenuState extends State<AnimatedPopUpMenu> with SingleTicker
   @override
   Widget build(BuildContext context) {
     return FadeTransition(
-      opacity: opacityAnimation,
-      child: widget.child,
+      opacity: _opacityAnimation,
+      child: widget._child,
     );
   }
 }

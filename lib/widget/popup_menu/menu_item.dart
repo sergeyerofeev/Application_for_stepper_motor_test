@@ -1,6 +1,21 @@
 import 'package:flutter/material.dart';
 
-abstract class PopUpMenuItemProvider {
+class MenuItem {
+  final int _id;
+  final Widget _widget;
+
+  const MenuItem({
+    required int id,
+    required Widget widget,
+  })  : _id = id,
+        _widget = widget;
+
+  int get id => _id;
+
+  Widget get widget => _widget;
+}
+
+/*abstract class PopUpMenuItemProvider {
   String get menuTitle;
   dynamic get menuUserInfo;
   Widget? get menuImage;
@@ -60,4 +75,4 @@ class PopUpMenuItem extends PopUpMenuItemProvider {
 
   @override
   TextAlign get menuTextAlign => textAlign;
-}
+}*/

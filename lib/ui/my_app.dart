@@ -8,9 +8,7 @@ import '../main.dart';
 import '../provider/provider.dart';
 import '../widget/draggeble_app_bar.dart';
 import '../widget/knob/knob.dart';
-import '../widget/popup_menu/menu_config.dart';
-import '../widget/popup_menu/menu_item.dart';
-import '../widget/popup_menu/popup_menu.dart';
+import '../widget/popup_menu/selection_button.dart';
 
 class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
@@ -21,8 +19,8 @@ class MyApp extends ConsumerStatefulWidget {
 
 class _MyAppState extends ConsumerState<MyApp> {
   late final Timer hidTimer;
-  PopupMenu? menu;
-  GlobalKey btnKey = GlobalKey();
+/*  PopupMenu? menu;
+  GlobalKey btnKey = GlobalKey();*/
 
   @override
   void initState() {
@@ -76,8 +74,8 @@ class _MyAppState extends ConsumerState<MyApp> {
           ),
         ),
       ),
-      home: DecoratedBox(
-        decoration: const BoxDecoration(
+      home: const DecoratedBox(
+        decoration: BoxDecoration(
           color: Color(0xFFFEFEFE),
           image: DecorationImage(
             image: AssetImage('assets/background.png'),
@@ -86,30 +84,31 @@ class _MyAppState extends ConsumerState<MyApp> {
         ),
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: const DraggebleAppBar(),
+          appBar: DraggebleAppBar(),
           body: SizedBox.expand(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(30.0),
+                  padding: EdgeInsets.all(30.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ElevatedButton(
+                      CustomField(),
+                      SizedBox(height: 20),
+                      CustomField(),
+                      SizedBox(height: 50),
+                      SelectionButton(),
+                      /*ElevatedButton(
                         key: btnKey,
                         onPressed: onDismissOnlyBeCalledOnce,
                         child: const Text('Настройка микрошага'),
-                      ),
-                      const SizedBox(height: 20),
-                      const CustomField(),
-                      const SizedBox(height: 20),
-                      const CustomField(),
+                      ),*/
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                const Knob(
+                SizedBox(height: 20),
+                Knob(
                   knobDiameter: 240,
                   scaleDiameter: 330,
                   scaleMin: 20,
@@ -125,7 +124,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     );
   }
 
-  void onDismissOnlyBeCalledOnce() {
+/*  void onDismissOnlyBeCalledOnce() {
     menu = PopupMenu(
       config: MenuConfig(
         itemWidth: 100.0,
@@ -152,5 +151,5 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   void onClickMenu(PopUpMenuItemProvider item) {
     print('Click menu -> ${item.menuTitle}');
-  }
+  }*/
 }

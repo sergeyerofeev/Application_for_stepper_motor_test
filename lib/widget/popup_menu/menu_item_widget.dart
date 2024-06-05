@@ -1,29 +1,34 @@
 import 'package:flutter/material.dart';
-
 import 'menu_item.dart';
 
 class MenuItemWidget extends StatefulWidget {
-  final PopUpMenuItemProvider item;
-  final bool showLine;
-  final Color lineColor;
-  final Color backgroundColor;
-  final Color highlightColor;
-  final double itemWidth;
-  final double itemHeight;
-
-  final Function(PopUpMenuItemProvider item)? clickCallback;
+  final MenuItem _item;
+  final double _itemWidth;
+  final double _itemHeight;
+  final bool _showLine;
+  final Color _lineColor;
+  final Color _backgroundColor;
+  final Color _highlightColor;
+  final void Function(int) _clickCallback;
 
   const MenuItemWidget({
     super.key,
-    this.itemWidth = 72.0,
-    this.itemHeight = 75.0,
-    required this.item,
-    this.showLine = false,
-    this.clickCallback,
-    required this.lineColor,
-    required this.backgroundColor,
-    required this.highlightColor,
-  });
+    required MenuItem item,
+    required double itemWidth,
+    required double itemHeight,
+    required bool showLine,
+    required Color lineColor,
+    required Color backgroundColor,
+    required Color highlightColor,
+    required clickCallback,
+  })  : _item = item,
+        _itemWidth = itemWidth,
+        _itemHeight = itemHeight,
+        _showLine = showLine,
+        _lineColor = lineColor,
+        _backgroundColor = backgroundColor,
+        _highlightColor = highlightColor,
+        _clickCallback = clickCallback;
 
   @override
   State<StatefulWidget> createState() {
@@ -32,81 +37,40 @@ class MenuItemWidget extends StatefulWidget {
 }
 
 class _MenuItemWidgetState extends State<MenuItemWidget> {
-  var highlightColor = const Color(0x55000000);
-  var color = const Color(0xff232323);
+  late Color _highlightColor;
+  late Color _color;
 
   @override
   void initState() {
-    color = widget.backgroundColor;
-    highlightColor = widget.highlightColor;
+    _color = widget._backgroundColor;
+    _highlightColor = widget._highlightColor;
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown: (details) {
-        color = highlightColor;
-        setState(() {});
-      },
-      onTapUp: (details) {
-        color = widget.backgroundColor;
-        setState(() {});
-      },
+      onTapDown: (_) => setState(() {
+        _color = _highlightColor;
+      }),
       onTap: () {
-        if (widget.clickCallback != null) {
-          color = highlightColor;
-          widget.clickCallback!(widget.item);
-        }
+        _color = _highlightColor;
+        widget._clickCallback.call(widget._item.id);
+      },
+      onLongPress: () {
+        _color = _highlightColor;
+        widget._clickCallback.call(widget._item.id);
       },
       child: Container(
-          width: widget.itemWidth,
-          height: widget.itemHeight,
+          width: widget._itemWidth,
+          height: widget._itemHeight,
           decoration: BoxDecoration(
-            color: color,
+            color: _color,
             border: Border(
-              right: BorderSide(color: widget.showLine ? widget.lineColor : Colors.transparent),
+              right: BorderSide(color: widget._showLine ? widget._lineColor : Colors.transparent),
             ),
           ),
-          child: _createContent()),
+          child: widget._item.widget),
     );
-  }
-
-  Widget _createContent() {
-    if (widget.item.menuImage != null) {
-      // image and text
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          SizedBox(
-            width: 30.0,
-            height: 30.0,
-            child: widget.item.menuImage,
-          ),
-          SizedBox(
-            height: 22.0,
-            child: Material(
-              color: Colors.transparent,
-              child: Text(
-                widget.item.menuTitle,
-                style: widget.item.menuTextStyle,
-              ),
-            ),
-          )
-        ],
-      );
-    } else {
-      // only text
-      return Center(
-        child: Material(
-          color: Colors.transparent,
-          child: Text(
-            widget.item.menuTitle,
-            style: widget.item.menuTextStyle,
-            textAlign: widget.item.menuTextAlign,
-          ),
-        ),
-      );
-    }
   }
 }

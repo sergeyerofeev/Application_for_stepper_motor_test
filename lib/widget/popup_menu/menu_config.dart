@@ -1,37 +1,71 @@
 import 'package:flutter/material.dart';
 
 class MenuConfig {
-  final double itemWidth;
+  // Ширина одного элемента выпадающего меню
+  final double _itemWidth;
 
-  final double itemHeight;
+  // Высота одного элемента выпадающего меню
+  final double _itemHeight;
 
-  final double arrowHeight;
+  final double _triangleHeight;
 
-  final Color backgroundColor;
+  final Color _backgroundColor;
 
-  final Color highlightColor;
+  final Color _highlightColor;
 
-  final Color lineColor;
+  // Цвет разделительной линии между элементами выпадающего меню
+  final Color _dividingLineColor;
 
-  final BorderConfig? border;
+  final BorderConfig _border;
 
-  final double borderRadius;
+  final double _borderRadius;
 
   const MenuConfig({
-    this.itemWidth = 72.0,
-    this.itemHeight = 75.0,
-    this.arrowHeight = 10.0,
-    this.backgroundColor = const Color(0xff232323),
-    this.highlightColor = const Color(0xff353535),
-    this.lineColor = const Color(0x55000000),
-    this.border,
-    this.borderRadius = 10.0,
-  });
+    double itemWidth = 50.0,
+    double itemHeight = 50.0,
+    double triangleHeight = 10.0,
+    Color backgroundColor = const Color(0xffe5e5e5),
+    Color highlightColor = const Color(0xffb4b4b4),
+    Color dividingLineColor = const Color(0xff989898),
+    BorderConfig border = const BorderConfig(),
+    double borderRadius = 5.0,
+  })  : _itemWidth = itemWidth,
+        _itemHeight = itemHeight,
+        _triangleHeight = triangleHeight,
+        _backgroundColor = backgroundColor,
+        _highlightColor = highlightColor,
+        _dividingLineColor = dividingLineColor,
+        _border = border,
+        _borderRadius = borderRadius;
+
+  double get itemWidth => _itemWidth;
+
+  double get itemHeight => _itemHeight;
+
+  double get triangleHeight => _triangleHeight;
+
+  Color get backgroundColor => _backgroundColor;
+
+  Color get highlightColor => _highlightColor;
+
+  Color get dividingLineColor => _dividingLineColor;
+
+  BorderConfig get border => _border;
+
+  double get borderRadius => _borderRadius;
 }
 
 class BorderConfig {
-  final Color color;
-  final double width;
+  final Color _color;
+  final double _width;
 
-  BorderConfig({this.color = const Color(0xFF000000), this.width = 1.0});
+  const BorderConfig({
+    Color color = Colors.transparent,
+    double width = 0.0,
+  })  : _color = color,
+        _width = width;
+
+  Color get color => _color;
+
+  double get width => _width;
 }
