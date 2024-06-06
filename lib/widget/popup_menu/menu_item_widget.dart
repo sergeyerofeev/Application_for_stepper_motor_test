@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../provider/provider.dart';
 import 'menu_item.dart';
 
-class MenuItemWidget extends StatefulWidget {
+class MenuItemWidget extends ConsumerStatefulWidget {
   final MenuItem _item;
   final double _itemWidth;
   final double _itemHeight;
@@ -9,7 +11,7 @@ class MenuItemWidget extends StatefulWidget {
   final Color _lineColor;
   final Color _backgroundColor;
   final Color _highlightColor;
-  final void Function(int) _clickCallback;
+  final void Function() _dismissMenu;
 
   const MenuItemWidget({
     super.key,
@@ -20,7 +22,7 @@ class MenuItemWidget extends StatefulWidget {
     required Color lineColor,
     required Color backgroundColor,
     required Color highlightColor,
-    required clickCallback,
+    required dismissMenu,
   })  : _item = item,
         _itemWidth = itemWidth,
         _itemHeight = itemHeight,
@@ -28,15 +30,15 @@ class MenuItemWidget extends StatefulWidget {
         _lineColor = lineColor,
         _backgroundColor = backgroundColor,
         _highlightColor = highlightColor,
-        _clickCallback = clickCallback;
+        _dismissMenu = dismissMenu;
 
   @override
-  State<StatefulWidget> createState() {
+  ConsumerState<MenuItemWidget> createState() {
     return _MenuItemWidgetState();
   }
 }
 
-class _MenuItemWidgetState extends State<MenuItemWidget> {
+class _MenuItemWidgetState extends ConsumerState<MenuItemWidget> {
   late Color _highlightColor;
   late Color _color;
 
@@ -50,27 +52,31 @@ class _MenuItemWidgetState extends State<MenuItemWidget> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown: (_) => setState(() {
-        _color = _highlightColor;
-      }),
       onTap: () {
-        _color = _highlightColor;
-        widget._clickCallback.call(widget._item.id);
+        setState(() {
+          _color = _highlightColor;
+        });
+        ref.read(idProvider.notifier).state = widget._item.id;
+        widget._dismissMenu();
       },
       onLongPress: () {
-        _color = _highlightColor;
-        widget._clickCallback.call(widget._item.id);
+        setState(() {
+          _color = _highlightColor;
+        });
+        ref.read(idProvider.notifier).state = widget._item.id;
+        widget._dismissMenu();
       },
       child: Container(
-          width: widget._itemWidth,
-          height: widget._itemHeight,
-          decoration: BoxDecoration(
-            color: _color,
-            border: Border(
-              right: BorderSide(color: widget._showLine ? widget._lineColor : Colors.transparent),
-            ),
+        width: widget._itemWidth,
+        height: widget._itemHeight,
+        decoration: BoxDecoration(
+          color: _color,
+          border: Border(
+            right: BorderSide(color: widget._showLine ? widget._lineColor : Colors.transparent),
           ),
-          child: widget._item.widget),
+        ),
+        child: widget._item.widget,
+      ),
     );
   }
 }

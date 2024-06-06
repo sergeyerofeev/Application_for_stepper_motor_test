@@ -7,77 +7,66 @@ import 'menu_config.dart';
 import 'menu_item.dart';
 import 'triangle_painter.dart';
 
-/*Rect getWidgetGlobalRect(GlobalKey key) {
-  RenderBox renderBox = key.currentContext!.findRenderObject() as RenderBox;
-  var offset = renderBox.localToGlobal(Offset.zero);
-  return Rect.fromLTWH(offset.dx, offset.dy, renderBox.size.width, renderBox.size.height);
-}*/
-
 class PopupMenu {
   final BuildContext _context;
   final MenuConfig _config;
   final List<MenuItem> _items;
-  final void Function(int) _onClickMenu;
   final Duration _duration;
+
+  late final AnimationController _animationController;
+  late final Size _screenSize;
+
+  OverlayEntry? _entry;
+  bool _isShow = false;
 
   PopupMenu({
     required BuildContext context,
     required MenuConfig config,
     required List<MenuItem> items,
-    required onClickMenu,
     Duration duration = const Duration(milliseconds: 500),
   })  : _context = context,
         _config = config,
         _items = items,
-        _duration = duration,
-        _onClickMenu = onClickMenu;
-
-  OverlayEntry? _entry;
-
-  // Видимость всплывающего меню
-  bool _isShow = false;
-
-  Size? _screenSize;
-  AnimationController? _animationController;
-  RowMenuLayout? _menuLayout;
-
-  Rect getWidgetGlobalRect(GlobalKey key) {
-    RenderBox renderBox = key.currentContext!.findRenderObject() as RenderBox;
-    var offset = renderBox.localToGlobal(Offset.zero);
-    return Rect.fromLTWH(offset.dx, offset.dy, renderBox.size.width, renderBox.size.height);
-  }
-
-  void show({required GlobalKey widgetKey}) {
-    final attachRect = getWidgetGlobalRect(widgetKey);
-    // Создаём объект с переданными элементами меню
-    _menuLayout = RowMenuLayout(
-      config: _config,
-      items: _items,
-      onDismiss: _dismiss,
-      onClickMenu: _onClickMenu,
-    );
-
-    LayoutP layoutp = _calculateOffset(
-      _context,
-      attachRect,
-      _menuLayout!.width,
-      _menuLayout!.height,
-    );
-
-    _animationController ??= AnimationController(
+        _duration = duration {
+    // Инициализируем контроллер анимации
+    _animationController = AnimationController(
       duration: _duration,
       vsync: Navigator.of(_context).overlay!,
     );
+    // Вычисляем размер родительского элемента
+    _screenSize = MediaQuery.of(context).size;
+  }
+
+  void show({required GlobalKey widgetKey}) {
+    // При помощи переданного ключа базового виджета получаем его размеры
+    RenderBox renderBox = widgetKey.currentContext!.findRenderObject() as RenderBox;
+    // и смещение на экране
+    Offset offset = renderBox.localToGlobal(Offset.zero);
+    final attachRect = Rect.fromLTWH(offset.dx, offset.dy, renderBox.size.width, renderBox.size.height);
+
+    // Создаём объект с переданными элементами меню
+    RowMenuLayout menuLayout = RowMenuLayout(
+      config: _config,
+      items: _items,
+      onDismiss: _dismiss,
+    );
+
+    LayoutP layout = _calculateOffset(
+      _context,
+      attachRect,
+      menuLayout.width,
+      menuLayout.height,
+    );
 
     _entry = OverlayEntry(builder: (context) {
-      return build(layoutp, _menuLayout!);
+      return build(layout, menuLayout);
     });
 
     Overlay.of(_context).insert(_entry!);
     _isShow = true;
   }
 
-  Widget build(LayoutP layoutp, RowMenuLayout menu) {
+  Widget build(LayoutP layout, RowMenuLayout menu) {
     Widget child = GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
@@ -93,39 +82,36 @@ class PopupMenu {
         color: Colors.transparent,
         child: Stack(
           children: <Widget>[
-            // triangle arrow
             Positioned(
-              left: layoutp._offset.dx,
-              top: layoutp._offset.dy + (_config.border.width * (layoutp._isDown ? -1 : 1.5)),
+              left: layout._offset.dx,
+              top: layout._offset.dy + (_config.border.width * (layout._isDown ? -1 : 1.5)),
               child: menu.build(),
             ),
             Positioned(
               // Позиционируем треугольник всплывающего меню
-              left: layoutp._attachRect.left +
-                  (layoutp._attachRect.width - _config.triangleHeight - _config.border.width) / 2.0,
-              top: layoutp._isDown
-                  ? layoutp._offset.dy + layoutp._height - _config.border.width
-                  : layoutp._offset.dy - _config.triangleHeight + _config.border.width,
+              left: layout._attachRect.left +
+                  (layout._attachRect.width - _config.triangleHeight - _config.border.width) / 2.0,
+              top: layout._isDown
+                  ? layout._offset.dy + layout._height - _config.border.width
+                  : layout._offset.dy - _config.triangleHeight + _config.border.width,
               child: CustomPaint(
                 size: Size(
                   _config.triangleHeight + _config.border.width,
                   _config.triangleHeight + _config.border.width,
                 ),
                 painter:
-                    TrianglePainter(isDown: layoutp._isDown, color: _config.backgroundColor, border: _config.border),
+                    TrianglePainter(isDown: layout._isDown, color: _config.backgroundColor, border: _config.border),
               ),
-            ),
-            // menu content
+            ), // menu content
           ],
         ),
       ),
     );
-    if (_animationController != null) {
-      child = _AnimatedPopUpMenu(
-        controller: _animationController!,
-        child: child,
-      );
-    }
+
+    child = _AnimatedPopUpMenu(
+      controller: _animationController,
+      child: child,
+    );
     return child;
   }
 
@@ -140,14 +126,13 @@ class PopupMenu {
       dx = 10.0;
     }
 
-    _screenSize ??= MediaQuery.of(context).size;
-
-    if (dx + contentWidth > _screenSize!.width && dx > 10.0) {
-      double tempDx = _screenSize!.width - contentWidth - 10;
+    if (dx + contentWidth > _screenSize.width && dx > 10.0) {
+      double tempDx = _screenSize.width - contentWidth - 10;
       if (tempDx > 10) {
         dx = tempDx;
       }
     }
+
     // 5.0 это margin от верхней границы виджета до нижней границы стрелки
     double dy = attachRect.top - contentHeight - 5.0;
     bool isDown = false;
@@ -170,12 +155,11 @@ class PopupMenu {
 
   void _dismiss() async {
     if (!_isShow) {
-      // Remove method should only be called once
       return;
     }
-    if (_animationController != null) {
-      await _animationController!.reverse();
-    }
+
+    await _animationController.reverse();
+    // Закрываем всплывающее окно
     _entry?.remove();
     _isShow = false;
   }

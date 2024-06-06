@@ -8,7 +8,6 @@ class RowMenuLayout {
   final MenuConfig _config;
   final List<MenuItem> _items;
   final VoidCallback _onDismiss;
-  final void Function(int) _onClickMenu;
 
   // Количество элементов в меню
   late final int _itemsCount;
@@ -21,11 +20,9 @@ class RowMenuLayout {
     required MenuConfig config,
     required List<MenuItem> items,
     required void Function() onDismiss,
-    required void Function(int) onClickMenu,
   })  : _config = config,
         _items = items,
-        _onDismiss = onDismiss,
-        _onClickMenu = onClickMenu {
+        _onDismiss = onDismiss {
     _itemsCount = _items.length;
     _menuWidth = _config.itemWidth * _itemsCount + _config.border.width * 2;
     _menuHeight = _config.itemHeight + _config.border.width * 2;
@@ -74,13 +71,8 @@ class RowMenuLayout {
       lineColor: _config.dividingLineColor,
       backgroundColor: _config.backgroundColor,
       highlightColor: _config.highlightColor,
-      clickCallback: itemClicked,
+      dismissMenu: _onDismiss,
     );
-  }
-
-  void itemClicked(int id) {
-    _onClickMenu.call(id);
-    _onDismiss();
   }
 
   Widget build() {

@@ -8,7 +8,7 @@ import '../main.dart';
 import '../provider/provider.dart';
 import '../widget/draggeble_app_bar.dart';
 import '../widget/knob/knob.dart';
-import '../widget/popup_menu/selection_button.dart';
+import '../widget/popup_menu/micro_step_selection.dart';
 
 class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
@@ -19,6 +19,7 @@ class MyApp extends ConsumerStatefulWidget {
 
 class _MyAppState extends ConsumerState<MyApp> {
   late final Timer hidTimer;
+
 /*  PopupMenu? menu;
   GlobalKey btnKey = GlobalKey();*/
 
@@ -57,7 +58,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
             backgroundColor: const MaterialStatePropertyAll<Color>(Colors.white),
-/*            foregroundColor: const MaterialStatePropertyAll<Color>(Colors.black),*/
+            //foregroundColor: const MaterialStatePropertyAll<Color>(Colors.black),
             surfaceTintColor: const MaterialStatePropertyAll<Color>(Colors.white),
             padding: MaterialStateProperty.all(const EdgeInsets.all(10.0)),
             side: MaterialStateProperty.all(const BorderSide(color: Colors.grey, width: 2)),
@@ -74,8 +75,8 @@ class _MyAppState extends ConsumerState<MyApp> {
           ),
         ),
       ),
-      home: const DecoratedBox(
-        decoration: BoxDecoration(
+      home: DecoratedBox(
+        decoration: const BoxDecoration(
           color: Color(0xFFFEFEFE),
           image: DecorationImage(
             image: AssetImage('assets/background.png'),
@@ -84,31 +85,27 @@ class _MyAppState extends ConsumerState<MyApp> {
         ),
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: DraggebleAppBar(),
+          appBar: const DraggebleAppBar(),
           body: SizedBox.expand(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Padding(
-                  padding: EdgeInsets.all(30.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CustomField(),
-                      SizedBox(height: 20),
-                      CustomField(),
-                      SizedBox(height: 50),
-                      SelectionButton(),
-                      /*ElevatedButton(
-                        key: btnKey,
-                        onPressed: onDismissOnlyBeCalledOnce,
-                        child: const Text('Настройка микрошага'),
-                      ),*/
+                      MicroStepSelection(),
+                      const SizedBox(height: 30),
+                      const CustomField(),
+                      const SizedBox(height: 30),
+                      const CustomField(),
+                      const SizedBox(height: 30),
                     ],
                   ),
                 ),
-                SizedBox(height: 20),
-                Knob(
+                const SizedBox(height: 20),
+                const Knob(
                   knobDiameter: 240,
                   scaleDiameter: 330,
                   scaleMin: 20,
@@ -123,33 +120,4 @@ class _MyAppState extends ConsumerState<MyApp> {
       ),
     );
   }
-
-/*  void onDismissOnlyBeCalledOnce() {
-    menu = PopupMenu(
-      config: MenuConfig(
-        itemWidth: 100.0,
-        itemHeight: 100.0,
-        backgroundColor: Colors.green,
-        lineColor: Colors.greenAccent,
-        highlightColor: Colors.greenAccent,
-        border: BorderConfig(color: Colors.grey, width: 3.0),
-        //borderRadius: 10.0,
-      ),
-      duration: const Duration(milliseconds: 500),
-      context: context,
-      items: [
-        PopUpMenuItem(title: '1', textStyle: const TextStyle(color: Color(0xffc5c5c5), fontSize: 16.0)),
-        PopUpMenuItem(title: '1/2', textStyle: const TextStyle(color: Color(0xffc5c5c5), fontSize: 16.0)),
-        PopUpMenuItem(title: '1/4', textStyle: const TextStyle(color: Color(0xffc5c5c5), fontSize: 16.0)),
-        PopUpMenuItem(title: '1/8', textStyle: const TextStyle(color: Color(0xffc5c5c5), fontSize: 16.0)),
-        PopUpMenuItem(title: '1/16', textStyle: const TextStyle(color: Color(0xffc5c5c5), fontSize: 16.0)),
-      ],
-      onClickMenu: onClickMenu,
-    );
-    menu!.show(widgetKey: btnKey);
-  }
-
-  void onClickMenu(PopUpMenuItemProvider item) {
-    print('Click menu -> ${item.menuTitle}');
-  }*/
 }

@@ -1,44 +1,57 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:stepper_motor_test/provider/provider.dart';
 
 import 'menu_config.dart';
 import 'menu_item.dart';
 import 'popup_menu.dart';
 
-class SelectionButton extends StatefulWidget {
-  const SelectionButton({super.key});
+class MicroStepSelection extends ConsumerWidget {
+  final GlobalKey btnKey = GlobalKey();
+
+  MicroStepSelection({super.key});
 
   @override
-  State<SelectionButton> createState() => _SelectionButtonState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final id = ref.watch<int>(idProvider);
+    late final String selectStep;
 
-class _SelectionButtonState extends State<SelectionButton> {
-  PopupMenu? menu;
+    switch (id) {
+      case 0:
+        selectStep = 'Выбран полный шаг';
+      case 1:
+        selectStep = 'Выбрано 1/2 шага';
+      case 2:
+        selectStep = 'Выбрано 1/4 шага';
+      case 3:
+        selectStep = 'Выбрано 1/8 шага';
+      case 4:
+        selectStep = 'Выбрано 1/16 шага';
+    }
 
-  GlobalKey btnKey = GlobalKey();
-
-  @override
-  Widget build(BuildContext context) {
     return ElevatedButton(
       key: btnKey,
-      onPressed: onDismissOnlyBeCalledOnce,
-      child: const Text('Настройка микрошага'),
+      onPressed: () => onDismissOnlyBeCalledOnce(context),
+      child: Text(
+        selectStep,
+        style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+      ),
     );
   }
 
-  void onDismissOnlyBeCalledOnce() {
-    menu = PopupMenu(
+  void onDismissOnlyBeCalledOnce(BuildContext context) {
+    PopupMenu menu = PopupMenu(
       config: const MenuConfig(
         itemWidth: 50.0,
         itemHeight: 50.0,
+        triangleHeight: 5.0,
         backgroundColor: Colors.white,
         dividingLineColor: Colors.grey,
         highlightColor: Colors.grey,
         border: BorderConfig(color: Colors.grey, width: 2.0),
-        triangleHeight: 5.0,
-        borderRadius: 8.0,
+        borderRadius: 5.0,
       ),
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 300),
       context: context,
       items: [
         const MenuItem(
@@ -66,12 +79,7 @@ class _SelectionButtonState extends State<SelectionButton> {
                 child:
                     Text('1/16', style: TextStyle(color: Colors.black, fontSize: 16.0, fontWeight: FontWeight.bold)))),
       ],
-      onClickMenu: onClickMenu,
     );
-    menu?.show(widgetKey: btnKey);
-  }
-
-  void onClickMenu(int id) {
-    print('Click menu -> $id');
+    menu.show(widgetKey: btnKey);
   }
 }
