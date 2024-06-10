@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../settings/my_style.dart' as myStyle;
+import 'package:stepper_motor_test/provider/provider.dart';
+import '../../settings/key_store.dart' as key_store;
 
-import '../settings/my_text.dart';
-
-class CustomField extends ConsumerStatefulWidget {
-  const CustomField({super.key});
+class AutoReloadField extends ConsumerStatefulWidget {
+  const AutoReloadField({super.key});
 
   @override
-  ConsumerState<CustomField> createState() => _UsernameFieldState();
+  ConsumerState<AutoReloadField> createState() => _AutoReloadFieldState();
 }
 
-class _UsernameFieldState extends ConsumerState<CustomField> {
-  late TextEditingController _textEditingController;
+class _AutoReloadFieldState extends ConsumerState<AutoReloadField> {
+  final TextEditingController _textEditingController = TextEditingController(text: '');
 
   @override
   void initState() {
-    _textEditingController = TextEditingController(text: "hello" /*ref.read(usernameProvider)*/);
+    // Загружаем значение сохранённое при предыдущем запуске приложения
+    Future(() async {
+      final arr = await ref.read(storageProvider).get<int>(key_store.arr) ?? 0;
+      if (mounted) {
+        setState(() => _textEditingController.text = arr.toString());
+      }
+    });
     super.initState();
   }
 
@@ -30,14 +35,17 @@ class _UsernameFieldState extends ConsumerState<CustomField> {
   void validator() {
     if (_textEditingController.text.isEmpty) {
       // Строка пустая
-      //ref.read(usernameErrorProvider.notifier).state = 'Пожалуйста введите имя пользователя';
+      ref.read(arrErrorProvider.notifier).state = 'Пожалуйста введите значение для ARR регистра';
+      return;
     }
-    //ref.read(usernameProvider.notifier).state = _textEditingController.text;
+    if (int.tryParse(_textEditingController.text) != null) {
+      ref.read(arrProvider.notifier).state = int.tryParse(_textEditingController.text)!;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    //final usernameError = ref.watch(usernameErrorProvider);
+    final arrError = ref.watch(arrErrorProvider);
     return Focus(
       onFocusChange: (hasFocus) {
         if (!hasFocus) {
@@ -48,38 +56,37 @@ class _UsernameFieldState extends ConsumerState<CustomField> {
         children: [
           TextField(
             controller: _textEditingController,
-            style: MyText.textFieldStyle,
+            style: const TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
             decoration: InputDecoration(
-              labelText: 'Имя пользователя',
-              labelStyle: MyText.labelStyle,
-              floatingLabelStyle: MyText.floatingLabelStyle,
+              labelText: 'Значение регистра ARR',
+              labelStyle: const TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+              floatingLabelStyle: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
               enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.grey, width: 2.0)),
               focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.blue, width: 3.0)),
               errorBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.deepOrange, width: 3.0)),
               focusedErrorBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.red, width: 3.0)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 18),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
               suffixIcon: IconButton(
                 highlightColor: Colors.transparent,
                 onPressed: _textEditingController.clear,
                 icon: const Icon(Icons.clear, color: Colors.grey),
               ),
-              //errorText: usernameError,
+              errorText: arrError,
             ),
             inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[+0-9]'))],
             onChanged: (value) {
-              /*final usernameError = ref.read(usernameErrorProvider);
-              if (usernameError != null) {
+              if (arrError != null) {
                 // Сбрасываем ошибку
-                ref.read(usernameErrorProvider.notifier).state = null;
+                ref.read(arrErrorProvider.notifier).state = null;
                 setState(() {});
-              }*/
+              }
             },
             onSubmitted: (_) {
               validator();
             },
           ),
           // Задаём отступ для компенсации смещения нижних элементов в случае ошибки
-          //usernameError != null ? const SizedBox(height: 12) : const SizedBox(height: 35),
+          arrError != null ? const SizedBox(height: 12) : const SizedBox(height: 36),
         ],
       ),
     );

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../provider/provider.dart';
-import '../settings/key_store.dart';
+import '../settings/key_store.dart' as key_store;
 
 class DraggebleAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const DraggebleAppBar({super.key});
@@ -57,14 +57,14 @@ class DraggebleAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     onPressed: () async {
                       // Получим и сохраним положение окна на экране монитора
                       final position = await windowManager.getPosition();
-                      final dx = await ref.read(storageProvider).get<double>(KeyStore.offsetX);
-                      final dy = await ref.read(storageProvider).get<double>(KeyStore.offsetY);
+                      final dx = await ref.read(storageProvider).get<double>(key_store.offsetX);
+                      final dy = await ref.read(storageProvider).get<double>(key_store.offsetY);
                       // Сохраняем, только если значения изменились
                       if (dx != position.dx) {
-                        await ref.read(storageProvider).set<double>(KeyStore.offsetX, position.dx);
+                        await ref.read(storageProvider).set<double>(key_store.offsetX, position.dx);
                       }
                       if (dy != position.dy) {
-                        await ref.read(storageProvider).set<double>(KeyStore.offsetY, position.dy);
+                        await ref.read(storageProvider).set<double>(key_store.offsetY, position.dy);
                       }
                       await windowManager.close();
                     },

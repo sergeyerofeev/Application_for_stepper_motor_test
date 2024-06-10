@@ -34,7 +34,7 @@ class PopupMenu {
       vsync: Navigator.of(_context).overlay!,
     );
     // Вычисляем размер родительского элемента
-    _screenSize = MediaQuery.of(context).size;
+    _screenSize = MediaQuery.of(_context).size;
   }
 
   void show({required GlobalKey widgetKey}) {

@@ -11,8 +11,13 @@ final idProvider = StateProvider.autoDispose<int>((ref) => 0);
 // Провайдер состояния подключения USB
 final hidProvider = StateProvider.autoDispose<bool>((ref) => false);
 
+// Провайдер значения PSC регистра
+final pscProvider = StateProvider.autoDispose<int>((ref) => 123456789);
+final pscErrorProvider = StateProvider.autoDispose<String?>((ref) => null);
+
 // Провайдер значения ARR регистра
-final arrProvider = StateProvider.autoDispose<int>((ref) => 0);
+final arrProvider = StateProvider.autoDispose<int>((ref) => 123456789);
+final arrErrorProvider = StateProvider.autoDispose<String?>((ref) => null);
 
 // Текущий угол поворота регулятора
 final turnProvider = StateProvider.autoDispose<int>((ref) => 0);

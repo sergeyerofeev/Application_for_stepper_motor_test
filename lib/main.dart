@@ -10,7 +10,7 @@ import 'package:window_manager/window_manager.dart';
 import 'data/data_sources/my_storage.dart';
 import 'hidapi/hid.dart';
 import 'provider/provider.dart';
-import 'settings/key_store.dart';
+import 'settings/key_store.dart' as key_store;
 import 'ui/my_app.dart';
 
 HID hid = HID(idVendor: 1148, idProduct: 22348);
@@ -27,17 +27,18 @@ void main() async {
 
   final sharedPreferences = await SharedPreferences.getInstance();
   // Извлекаем из хранилища положение окна на экране монитора
-  final double? dx = sharedPreferences.getDouble(KeyStore.offsetX);
-  final double? dy = sharedPreferences.getDouble(KeyStore.offsetY);
+  final double? dx = sharedPreferences.getDouble(key_store.offsetX);
+  final double? dy = sharedPreferences.getDouble(key_store.offsetY);
 
-  const initialSize = Size(500, 800);
+  const initialSize = Size(600, 900);
   WindowOptions windowOptions = const WindowOptions(
     size: initialSize,
     //minimumSize: initialSize,
     //maximumSize: initialSize,
     skipTaskbar: false,
     title: 'Stepper motor test',
-    titleBarStyle: TitleBarStyle.hidden, // Скрыть панель с кнопками Windows
+    // Скрыть панель с кнопками Windows
+    titleBarStyle: TitleBarStyle.hidden,
   );
 
   windowManager.waitUntilReadyToShow(windowOptions, () async {

@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:stepper_motor_test/widget/custom_field.dart';
+import 'package:stepper_motor_test/widget/text_field/arr_field.dart';
+import 'package:stepper_motor_test/widget/text_field/psc_field.dart';
 
 import '../main.dart';
 import '../provider/provider.dart';
@@ -97,10 +98,10 @@ class _MyAppState extends ConsumerState<MyApp> {
                     children: [
                       MicroStepSelection(),
                       const SizedBox(height: 30),
-                      const CustomField(),
-                      const SizedBox(height: 30),
-                      const CustomField(),
-                      const SizedBox(height: 30),
+                      const PrescalerField(),
+                      //const SizedBox(height: 30),
+                      const AutoReloadField(),
+                      //const SizedBox(height: 30),
                     ],
                   ),
                 ),
