@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'menu_config.dart';
 import 'menu_item.dart';
 import 'menu_item_widget.dart';
 
 class RowMenuLayout {
+  final AutoDisposeStateProvider<int> _dataProvider;
   final MenuConfig _config;
   final List<MenuItem> _items;
   final VoidCallback _onDismiss;
@@ -17,10 +19,12 @@ class RowMenuLayout {
   late final double _menuHeight;
 
   RowMenuLayout({
+    required AutoDisposeStateProvider<int> dataProvider,
     required MenuConfig config,
     required List<MenuItem> items,
     required void Function() onDismiss,
-  })  : _config = config,
+  })  : _dataProvider = dataProvider,
+        _config = config,
         _items = items,
         _onDismiss = onDismiss {
     _itemsCount = _items.length;
@@ -66,6 +70,7 @@ class RowMenuLayout {
     return MenuItemWidget(
       itemWidth: _config.itemWidth,
       itemHeight: _config.itemHeight,
+      dataProvider: _dataProvider,
       item: item,
       showLine: showLine,
       lineColor: _config.dividingLineColor,

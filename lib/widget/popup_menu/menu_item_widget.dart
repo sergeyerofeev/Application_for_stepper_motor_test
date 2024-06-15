@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../provider/provider.dart';
 import 'menu_item.dart';
 
 class MenuItemWidget extends ConsumerStatefulWidget {
+  final AutoDisposeStateProvider<int> _dataProvider;
   final MenuItem _item;
   final double _itemWidth;
   final double _itemHeight;
@@ -15,6 +15,7 @@ class MenuItemWidget extends ConsumerStatefulWidget {
 
   const MenuItemWidget({
     super.key,
+    required AutoDisposeStateProvider<int> dataProvider,
     required MenuItem item,
     required double itemWidth,
     required double itemHeight,
@@ -23,7 +24,8 @@ class MenuItemWidget extends ConsumerStatefulWidget {
     required Color backgroundColor,
     required Color highlightColor,
     required dismissMenu,
-  })  : _item = item,
+  })  : _dataProvider = dataProvider,
+        _item = item,
         _itemWidth = itemWidth,
         _itemHeight = itemHeight,
         _showLine = showLine,
@@ -56,14 +58,14 @@ class _MenuItemWidgetState extends ConsumerState<MenuItemWidget> {
         setState(() {
           _color = _highlightColor;
         });
-        ref.read(idProvider.notifier).state = widget._item.id;
+        ref.read(widget._dataProvider.notifier).state = widget._item.id;
         widget._dismissMenu();
       },
       onLongPress: () {
         setState(() {
           _color = _highlightColor;
         });
-        ref.read(idProvider.notifier).state = widget._item.id;
+        ref.read(widget._dataProvider.notifier).state = widget._item.id;
         widget._dismissMenu();
       },
       child: Container(

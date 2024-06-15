@@ -11,7 +11,7 @@ import 'data/data_sources/my_storage.dart';
 import 'hidapi/hid.dart';
 import 'provider/provider.dart';
 import 'settings/key_store.dart' as key_store;
-import 'ui/my_app.dart';
+import 'ui/main_view.dart';
 
 HID hid = HID(idVendor: 1148, idProduct: 22348);
 late Uint8List rawData;
@@ -30,7 +30,7 @@ void main() async {
   final double? dx = sharedPreferences.getDouble(key_store.offsetX);
   final double? dy = sharedPreferences.getDouble(key_store.offsetY);
 
-  const initialSize = Size(600, 900);
+  const initialSize = Size(550, 900);
   WindowOptions windowOptions = const WindowOptions(
     size: initialSize,
     //minimumSize: initialSize,
@@ -59,6 +59,6 @@ void main() async {
     overrides: [
       storageProvider.overrideWithValue(MyStorage(sharedPreferences)),
     ],
-    child: const MyApp(),
+    child: const MainView(),
   ));
 }

@@ -6,27 +6,27 @@ import 'menu_config.dart';
 import 'menu_item.dart';
 import 'popup_menu.dart';
 
-class MicroStepSelection extends ConsumerWidget {
+class StepAngleSelection extends ConsumerWidget {
   final GlobalKey btnKey = GlobalKey();
 
-  MicroStepSelection({super.key});
+  StepAngleSelection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final microStep = ref.watch<int>(microStepProvider);
-    late final String selectStep;
+    final stepAngle = ref.watch<int>(stepAngleProvider);
+    late final String selectAngle;
 
-    switch (microStep) {
+    switch (stepAngle) {
       case 0:
-        selectStep = 'Выбран полный шаг';
+        selectAngle = 'Угол шага 0,9\u00B0';
       case 1:
-        selectStep = 'Выбрано 1/2 шага';
+        selectAngle = 'Угол шага 1,8\u00B0';
       case 2:
-        selectStep = 'Выбрано 1/4 шага';
+        selectAngle = 'Угол шага 3,6\u00B0';
       case 3:
-        selectStep = 'Выбрано 1/8 шага';
+        selectAngle = 'Угол шага 5,625\u00B0';
       case 4:
-        selectStep = 'Выбрано 1/16 шага';
+        selectAngle = 'Угол шага 7,5\u00B0';
     }
 
     return Container(
@@ -42,7 +42,7 @@ class MicroStepSelection extends ConsumerWidget {
         onTap: () => onDismissOnlyBeCalledOnce(context),
         child: Center(
           child: Text(
-            selectStep,
+            selectAngle,
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold),
           ),
@@ -53,9 +53,9 @@ class MicroStepSelection extends ConsumerWidget {
 
   void onDismissOnlyBeCalledOnce(BuildContext context) {
     PopupMenu menu = PopupMenu(
-      dataProvider: microStepProvider,
+      dataProvider: stepAngleProvider,
       config: const MenuConfig(
-        itemWidth: 50.0,
+        itemWidth: 60.0,
         itemHeight: 50.0,
         horizontalMargin: 20.0,
         triangleHeight: 5.0,
@@ -71,27 +71,28 @@ class MicroStepSelection extends ConsumerWidget {
         const MenuItem(
             id: 0,
             widget: Center(
-                child: Text('1', style: TextStyle(color: Colors.black, fontSize: 16.0, fontWeight: FontWeight.bold)))),
+                child: Text('0,9\u00B0',
+                    style: TextStyle(color: Colors.black, fontSize: 16.0, fontWeight: FontWeight.bold)))),
         const MenuItem(
             id: 1,
             widget: Center(
-                child:
-                    Text('1/2', style: TextStyle(color: Colors.black, fontSize: 16.0, fontWeight: FontWeight.bold)))),
+                child: Text('1,8\u00B0',
+                    style: TextStyle(color: Colors.black, fontSize: 16.0, fontWeight: FontWeight.bold)))),
         const MenuItem(
             id: 2,
             widget: Center(
-                child:
-                    Text('1/4', style: TextStyle(color: Colors.black, fontSize: 16.0, fontWeight: FontWeight.bold)))),
+                child: Text('3,6\u00B0',
+                    style: TextStyle(color: Colors.black, fontSize: 16.0, fontWeight: FontWeight.bold)))),
         const MenuItem(
             id: 3,
             widget: Center(
-                child:
-                    Text('1/8', style: TextStyle(color: Colors.black, fontSize: 16.0, fontWeight: FontWeight.bold)))),
+                child: Text('5,625\u00B0',
+                    style: TextStyle(color: Colors.black, fontSize: 16.0, fontWeight: FontWeight.bold)))),
         const MenuItem(
             id: 4,
             widget: Center(
-                child:
-                    Text('1/16', style: TextStyle(color: Colors.black, fontSize: 16.0, fontWeight: FontWeight.bold)))),
+                child: Text('7,5\u00B0',
+                    style: TextStyle(color: Colors.black, fontSize: 16.0, fontWeight: FontWeight.bold)))),
       ],
     );
     menu.show(widgetKey: btnKey);

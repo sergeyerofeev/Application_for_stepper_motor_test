@@ -1,6 +1,7 @@
 import 'dart:core';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'row_menu_layout.dart';
 import 'menu_config.dart';
@@ -9,6 +10,7 @@ import 'triangle_painter.dart';
 
 class PopupMenu {
   final BuildContext _context;
+  final AutoDisposeStateProvider<int> _dataProvider;
   final MenuConfig _config;
   final List<MenuItem> _items;
   final Duration _duration;
@@ -21,10 +23,12 @@ class PopupMenu {
 
   PopupMenu({
     required BuildContext context,
+    required AutoDisposeStateProvider<int> dataProvider,
     required MenuConfig config,
     required List<MenuItem> items,
     Duration duration = const Duration(milliseconds: 500),
   })  : _context = context,
+        _dataProvider = dataProvider,
         _config = config,
         _items = items,
         _duration = duration {
@@ -46,6 +50,7 @@ class PopupMenu {
 
     // Создаём объект с переданными элементами меню
     RowMenuLayout menuLayout = RowMenuLayout(
+      dataProvider: _dataProvider,
       config: _config,
       items: _items,
       onDismiss: _dismiss,
@@ -121,16 +126,17 @@ class PopupMenu {
     double contentWidth,
     double contentHeight,
   ) {
+    // contentWidth ширина всплывающего меню включая ширину обеих бордюров
     double dx = attachRect.left + attachRect.width / 2.0 - contentWidth / 2.0;
-    if (dx < 10.0) {
-      dx = 10.0;
+
+    if (dx < _config.horizontalMargin) {
+      // Всплывающее меню выходит за границу левого края, устанавливаем отступ
+      dx = _config.horizontalMargin;
     }
 
-    if (dx + contentWidth > _screenSize.width && dx > 10.0) {
-      double tempDx = _screenSize.width - contentWidth - 10;
-      if (tempDx > 10) {
-        dx = tempDx;
-      }
+    if (dx + contentWidth > _screenSize.width) {
+      // Всплывающее меню выходит за границу правого края, устанавливаем отступ
+      dx = _screenSize.width - contentWidth - _config.horizontalMargin;
     }
 
     // 5.0 это margin от верхней границы виджета до нижней границы стрелки

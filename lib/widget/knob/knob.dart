@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:stepper_motor_test/widget/knob/knob_scale_widget.dart';
 
 import '../../provider/provider.dart';
 import 'knob_gesture_detector.dart';
@@ -78,23 +79,32 @@ class _KnobState extends ConsumerState<Knob> {
   @override
   void initState() {
     Future(() {
-      ref.read(arrProvider.notifier).state = widget._scaleMin.toInt();
+      ref.read(currentArrProvider.notifier).state = widget._scaleMin.toInt();
     });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentValue = ref.watch(arrProvider);
+    final currentValue = ref.watch(currentArrProvider);
     final fullScale = widget._scaleMax - widget._scaleMin;
-
+    print('ребилд knob');
     return Column(
       children: [
         Stack(
           alignment: AlignmentDirectional.center,
           children: [
+            const KnobScaleWidget(),
+            /*KnobScaleWidget(
+              scaleWidth: widget._scaleWidth,
+              scaleHeight: widget._scaleHeight,
+              scaleMin: widget._scaleMin,
+              scaleStartAngle: widget._knobStartAngle,
+              scaleEndAngle: widget._knobEndAngle,
+              scaleFontSize: widget._scaleFontSize,
+            ),*/
             // Шкала регулятора
-            Container(
+            /*Container(
               width: widget._scaleWidth,
               height: widget._scaleHeight,
               decoration: const BoxDecoration(
@@ -113,7 +123,7 @@ class _KnobState extends ConsumerState<Knob> {
                   ),
                 ),
               ),
-            ),
+            ),*/
             // Ручка регулятора
             Container(
               width: widget._knobWidth,
@@ -150,8 +160,8 @@ class _KnobState extends ConsumerState<Knob> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
-        SizedBox(
+        SizedBox(height: 20),
+        /*SizedBox(
           // Ширину строки кнопок выбираем по размеру диаметра шкалы регулятора добавив 50 px
           width: widget._scaleWidth + 50,
           // Строка кнопок для дискретного управления
@@ -162,10 +172,10 @@ class _KnobState extends ConsumerState<Knob> {
                 onPressed: (currentValue > widget._scaleMin)
                     ? () {
                         if (currentValue - 1 < widget._scaleMin) {
-                          ref.read(arrProvider.notifier).state = widget._scaleMin.toInt();
+                          ref.read(currentArrProvider.notifier).state = widget._scaleMin.toInt();
                           ref.read(turnProvider.notifier).state = -11;
                         } else {
-                          ref.read(arrProvider.notifier).update((state) => state - 1);
+                          ref.read(currentArrProvider.notifier).update((state) => state - 1);
                           ref.read(turnProvider.notifier).state = -1;
                         }
                       }
@@ -177,10 +187,10 @@ class _KnobState extends ConsumerState<Knob> {
                 onPressed: (currentValue > widget._scaleMin && fullScale > 10)
                     ? () {
                         if (currentValue - 10 < widget._scaleMin) {
-                          ref.read(arrProvider.notifier).state = widget._scaleMin.toInt();
+                          ref.read(currentArrProvider.notifier).state = widget._scaleMin.toInt();
                           ref.read(turnProvider.notifier).state = -11;
                         } else {
-                          ref.read(arrProvider.notifier).update((state) => state - 10);
+                          ref.read(currentArrProvider.notifier).update((state) => state - 10);
                           ref.read(turnProvider.notifier).state = -10;
                         }
                       }
@@ -197,10 +207,10 @@ class _KnobState extends ConsumerState<Knob> {
                 onPressed: (currentValue < widget._scaleMax && fullScale > 10)
                     ? () {
                         if (currentValue + 10 > widget._scaleMax) {
-                          ref.read(arrProvider.notifier).state = widget._scaleMax.toInt();
+                          ref.read(currentArrProvider.notifier).state = widget._scaleMax.toInt();
                           ref.read(turnProvider.notifier).state = 11;
                         } else {
-                          ref.read(arrProvider.notifier).update((state) => state + 10);
+                          ref.read(currentArrProvider.notifier).update((state) => state + 10);
                           ref.read(turnProvider.notifier).state = 10;
                         }
                       }
@@ -212,10 +222,10 @@ class _KnobState extends ConsumerState<Knob> {
                 onPressed: (currentValue < widget._scaleMax)
                     ? () {
                         if (currentValue + 1 > widget._scaleMax) {
-                          ref.read(arrProvider.notifier).state = widget._scaleMax.toInt();
+                          ref.read(currentArrProvider.notifier).state = widget._scaleMax.toInt();
                           ref.read(turnProvider.notifier).state = 11;
                         } else {
-                          ref.read(arrProvider.notifier).update((state) => state + 1);
+                          ref.read(currentArrProvider.notifier).update((state) => state + 1);
                           ref.read(turnProvider.notifier).state = 1;
                         }
                       }
@@ -224,7 +234,7 @@ class _KnobState extends ConsumerState<Knob> {
               ),
             ],
           ),
-        ),
+        ),*/
       ],
     );
   }

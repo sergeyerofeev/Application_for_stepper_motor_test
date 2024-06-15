@@ -7,6 +7,10 @@ class MenuConfig {
   // Высота одного элемента выпадающего меню
   final double _itemHeight;
 
+  // Отступы всплывающего меню по горизонтали
+  final double _horizontalMargin;
+
+  // Высота треугольного элемента всплывающего меню
   final double _triangleHeight;
 
   final Color _backgroundColor;
@@ -23,14 +27,16 @@ class MenuConfig {
   const MenuConfig({
     double itemWidth = 50.0,
     double itemHeight = 50.0,
+    double horizontalMargin = 10.0,
     double triangleHeight = 10.0,
     Color backgroundColor = const Color(0xffe5e5e5),
     Color highlightColor = const Color(0xffb4b4b4),
     Color dividingLineColor = const Color(0xff989898),
     BorderConfig border = const BorderConfig(),
-    double borderRadius = 5.0,
+    double borderRadius = 4.0,
   })  : _itemWidth = itemWidth,
         _itemHeight = itemHeight,
+        _horizontalMargin = horizontalMargin,
         _triangleHeight = triangleHeight,
         _backgroundColor = backgroundColor,
         _highlightColor = highlightColor,
@@ -41,6 +47,8 @@ class MenuConfig {
   double get itemWidth => _itemWidth;
 
   double get itemHeight => _itemHeight;
+
+  double get horizontalMargin => _horizontalMargin;
 
   double get triangleHeight => _triangleHeight;
 

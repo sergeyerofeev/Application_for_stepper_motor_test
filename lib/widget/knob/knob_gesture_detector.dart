@@ -8,14 +8,21 @@ import 'knob_indicator.dart';
 class KnobGestureDetector extends ConsumerStatefulWidget {
   // knobStartAngle и knobEndAngle отсчитываются от часовой стрелки расположенной на 3 часа
   // при движении по часовой.
-  // Крайнее левое положение ручки регулятора в градусах
+  // Крайнее левое положение ручки регулятора в градусах и радианах
   final int _startAngle;
-
-  // Крайнее правое положение ручки регулятора в градусах
+  late final double _startAngleR;
+  // Крайнее правое положение ручки регулятора в градусах и радианах
   final int _endAngle;
+  late final double _endAngleR;
 
   final double _scaleMin;
   final double _scaleMax;
+
+  // Полный диапазон по шкале регулятора между началом и концом шкалы
+  late final double _fullValue;
+
+  // Полный угол поворота регулятора в градусах от 0 до 360
+  late final int _fullAngle;
 
   // Переменные для создания указателя на ручке регулятора
   late final double _indicatorWidth;
@@ -42,6 +49,10 @@ class KnobGestureDetector extends ConsumerStatefulWidget {
         _indicatorDepression = indicatorDepression,
         _indicatorMargin = indicatorMargin,
         _shadowColors = shadowColors {
+    _startAngleR = _startAngle / 180.0 * pi;
+    _endAngleR = _endAngle / 180.0 * pi;
+    _fullValue = _scaleMax - _scaleMin;
+    _fullAngle = 360 - _startAngle + _endAngle;
     _indicatorWidth = indicatorDiameter;
     _indicatorHeight = indicatorDiameter;
     _indicatorShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(indicatorDiameter));
@@ -52,108 +63,53 @@ class KnobGestureDetector extends ConsumerStatefulWidget {
 }
 
 class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
-  // Крайнее левое положение ручки регулятора в радианах
-  late final double minAngle;
+  late double _currentPos;
 
-  // Крайнее правое положение ручки регулятора в радианах
-  late final double maxAngle;
+  // Предыдущее положение ручки регулятора  в радианах, начальное положение равно _minAngleR
+  late double _prevAngleR;
 
-  late double currentPos;
-
-  // Предыдущее положение ручки регулятора  в радианах, начальное положение равно _minAngle
-  late double prevAngle;
-
-  // Последнее известное положение ручки регулятора  в радианах, начальное положение равно _minAngle
-  late double finalAngle;
+  // Последнее известное положение ручки регулятора  в радианах, начальное положение равно _minAngleR
+  late double _finalAngleR;
 
   // Направление поворота ручки регуляторо - по часовой
-  bool turnRight = true;
+  bool _turnRight = true;
 
   // Направление поворота ручки регуляторо - против часовой
-  bool turnLeft = false;
+  bool _turnLeft = false;
 
   // Значение на которое поворачиваем указатель на ручке регулятора
-  double indicatorRotate = 2 / 3 * pi;
+  double _indicatorRotate = 2 / 3 * pi;
 
   // Центр виджета
-  late Offset centerOfGestureDetector;
-
-  // Полный диапазон по шкале регулятора между началом и концом шкалы
-  late double fullValue;
-
-  // Полный угол поворота регулятора в градусах от 0 до 360
-  late int fullAngle;
+  late Offset _centerOfGestureDetector;
 
   @override
   void initState() {
-    minAngle = widget._startAngle / 180 * pi;
-    maxAngle = widget._endAngle / 180 * pi;
-    prevAngle = finalAngle = minAngle;
-    fullValue = widget._scaleMax - widget._scaleMin;
-    fullAngle = 360 - widget._startAngle + widget._endAngle;
     super.initState();
-  }
-
-  _onPanUpdate(DragUpdateDetails details) {
-    final touchPositionFromCenter = details.localPosition - centerOfGestureDetector;
-    // Текущее положение ручки регулятора в радианах
-    currentPos = touchPositionFromCenter.direction;
-
-    // Блокируем перемещение по нижней траектории от _minAngle до _maxAngle
-    if (currentPos < minAngle && currentPos > maxAngle) return;
-
-    if ((currentPos <= prevAngle + 0.1 && currentPos >= prevAngle - 0.1) ||
-        (currentPos >= -pi - 0.1 && currentPos <= -pi + 0.1) &&
-            (prevAngle >= pi - 0.1 && prevAngle <= pi + 0.1) &&
-            turnRight ||
-        (currentPos >= pi - 0.1 && currentPos <= pi + 0.1) &&
-            (prevAngle >= -pi - 0.1 && prevAngle <= -pi + 0.1) &&
-            turnLeft) {
-      if (prevAngle < currentPos) {
-        turnRight = true;
-        turnLeft = false;
-      } else if (prevAngle > currentPos) {
-        turnRight = false;
-        turnLeft = true;
-      }
-      prevAngle = currentPos;
-      finalAngle = currentPos;
-
-      // Вычисляем угол поворота указателя на регуляторе, а также значение на которое он указывает
-      if (currentPos >= minAngle && currentPos <= pi) {
-        indicatorRotate = currentPos;
-        final data = (indicatorRotate * 180 / pi - widget._startAngle) * fullValue / fullAngle + widget._scaleMin;
-        ref.read(arrProvider.notifier).state = data.round();
-      } else {
-        indicatorRotate = 2 * pi + currentPos;
-        final data = (indicatorRotate * 180 / pi - widget._startAngle) * fullValue / fullAngle + widget._scaleMin;
-        ref.read(arrProvider.notifier).state = data.round();
-      }
-    }
-    setState(() {});
+    _prevAngleR = _finalAngleR = widget._startAngleR;
   }
 
   @override
   Widget build(BuildContext context) {
     ref.listen<int>(turnProvider, (previous, next) {
       if (next == 0) return;
-      // Отслеживаем нажатие кнопок
-      changeRotate(next);
-      // Метод listen сработает только при изменении состояния, поэтому обнуляем
+      // Отслеживаем нажатие кнопок и изменяем положение ручки регулятора
+      _changeRotate(next);
+      // Метод listen сработает только при изменении состояния, поэтому необходимо обнулить
       ref.read(turnProvider.notifier).state = 0;
     });
     return LayoutBuilder(
       builder: (context, constraints) {
-        centerOfGestureDetector = Offset(constraints.maxWidth / 2, constraints.maxHeight / 2);
+        _centerOfGestureDetector = Offset(constraints.maxWidth / 2, constraints.maxHeight / 2);
         return GestureDetector(
           onPanUpdate: _onPanUpdate,
           child: Transform.rotate(
-            angle: finalAngle,
+            angle: _finalAngleR,
             // Указатель регулятора
             child: Container(
               alignment: Alignment.centerRight,
               child: Transform.rotate(
-                angle: -indicatorRotate,
+                angle: -_indicatorRotate,
                 // Указатель ручки регулятора, вращаем тень, вращение в обратную сторону
                 child: Container(
                   // Размер указателя
@@ -174,31 +130,71 @@ class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
     );
   }
 
-  void changeRotate(int next) {
+  _onPanUpdate(DragUpdateDetails details) {
+    final touchPositionFromCenter = details.localPosition - _centerOfGestureDetector;
+    // Текущее положение ручки регулятора в радианах
+    _currentPos = touchPositionFromCenter.direction;
+
+    // Блокируем перемещение по нижней траектории от _minAngle до _maxAngle
+    if (_currentPos < widget._startAngleR && _currentPos > widget._endAngleR) return;
+
+    if ((_currentPos <= _prevAngleR + 0.1 && _currentPos >= _prevAngleR - 0.1) ||
+        (_currentPos >= -pi - 0.1 && _currentPos <= -pi + 0.1) &&
+            (_prevAngleR >= pi - 0.1 && _prevAngleR <= pi + 0.1) &&
+            _turnRight ||
+        (_currentPos >= pi - 0.1 && _currentPos <= pi + 0.1) &&
+            (_prevAngleR >= -pi - 0.1 && _prevAngleR <= -pi + 0.1) &&
+            _turnLeft) {
+      if (_prevAngleR < _currentPos) {
+        _turnRight = true;
+        _turnLeft = false;
+      } else if (_prevAngleR > _currentPos) {
+        _turnRight = false;
+        _turnLeft = true;
+      }
+      _prevAngleR = _currentPos;
+      _finalAngleR = _currentPos;
+
+      // Вычисляем угол поворота указателя на регуляторе, а также значение на которое он указывает
+      if (_currentPos >= widget._startAngleR && _currentPos <= pi) {
+        _indicatorRotate = _currentPos;
+        final data = (_indicatorRotate * 180 / pi - widget._startAngle) * widget._fullValue / widget._fullAngle +
+            widget._scaleMin;
+        ref.read(currentArrProvider.notifier).state = data.round();
+      } else {
+        _indicatorRotate = 2 * pi + _currentPos;
+        final data = (_indicatorRotate * 180 / pi - widget._startAngle) * widget._fullValue / widget._fullAngle +
+            widget._scaleMin;
+        ref.read(currentArrProvider.notifier).state = data.round();
+      }
+    }
+  }
+
+  void _changeRotate(int next) {
     switch (next) {
       case 11:
         // Переводим ручку регулятора в максимольное положение
-        finalAngle = maxAngle;
-        indicatorRotate = maxAngle;
+        _finalAngleR = widget._endAngleR;
+        _indicatorRotate = widget._endAngleR;
       case -11:
         // Переводим ручку регулятора в минимальное положение
-        finalAngle = minAngle;
-        indicatorRotate = minAngle;
+        _finalAngleR = widget._startAngleR;
+        _indicatorRotate = widget._startAngleR;
       default:
         // Если next положительно, поворот по часовой, отрицательно - против часовой
-        final temp = fullAngle * pi / 180;
-        finalAngle += temp / fullValue * next;
-        indicatorRotate += temp / fullValue * next;
+        final temp = widget._fullAngle * pi / 180;
+        _finalAngleR += temp / widget._fullValue * next;
+        _indicatorRotate += temp / widget._fullValue * next;
     }
     // Устанавливаем в переменные новые положения ручки регулятора, без этого
     // ручка станет недоступна для вращения касанием экрана
-    if (finalAngle > pi) {
+    if (_finalAngleR > pi) {
       // Переход через границу с +pi на -pi
-      currentPos = finalAngle - 2 * pi;
-      prevAngle = finalAngle - 2 * pi;
+      _currentPos = _finalAngleR - 2 * pi;
+      _prevAngleR = _finalAngleR - 2 * pi;
     } else {
-      currentPos = finalAngle;
-      prevAngle = finalAngle;
+      _currentPos = _finalAngleR;
+      _prevAngleR = _finalAngleR;
     }
   }
 }
