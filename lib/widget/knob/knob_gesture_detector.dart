@@ -1,75 +1,34 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:stepper_motor_test/provider/provider.dart';
+import '../../provider/model.dart';
+import '../../provider/provider.dart';
+
 import 'knob_indicator.dart';
+import 'knob_global.dart' as knob_g;
 
-/// Отслеживаем перемещение ручки регулятора с центром предоставленного виджета.
+/// Отслеживаем перемещение ручки регулятора с центром предоставленного виджета
 class KnobGestureDetector extends ConsumerStatefulWidget {
-  // knobStartAngle и knobEndAngle отсчитываются от часовой стрелки расположенной на 3 часа
-  // при движении по часовой.
-  // Крайнее левое положение ручки регулятора в градусах и радианах
-  final int _startAngle;
-  late final double _startAngleR;
-  // Крайнее правое положение ручки регулятора в градусах и радианах
-  final int _endAngle;
-  late final double _endAngleR;
-
-  final double _scaleMin;
-  final double _scaleMax;
-
-  // Полный диапазон по шкале регулятора между началом и концом шкалы
-  late final double _fullValue;
-
-  // Полный угол поворота регулятора в градусах от 0 до 360
-  late final int _fullAngle;
-
-  // Переменные для создания указателя на ручке регулятора
-  late final double _indicatorWidth;
-  late final double _indicatorHeight;
-  late final ShapeBorder _indicatorShape;
-  final EdgeInsets _indicatorMargin;
-  final double _indicatorDepression;
-  final List<Color> _shadowColors;
-
-  KnobGestureDetector({
-    super.key,
-    required int knobStartAngle,
-    required int knobEndAngle,
-    required double scaleMin,
-    required double scaleMax,
-    required double indicatorDiameter,
-    required EdgeInsets indicatorMargin,
-    required double indicatorDepression,
-    required List<Color> shadowColors,
-  })  : _startAngle = knobStartAngle,
-        _endAngle = knobEndAngle,
-        _scaleMin = scaleMin,
-        _scaleMax = scaleMax,
-        _indicatorDepression = indicatorDepression,
-        _indicatorMargin = indicatorMargin,
-        _shadowColors = shadowColors {
-    _startAngleR = _startAngle / 180.0 * pi;
-    _endAngleR = _endAngle / 180.0 * pi;
-    _fullValue = _scaleMax - _scaleMin;
-    _fullAngle = 360 - _startAngle + _endAngle;
-    _indicatorWidth = indicatorDiameter;
-    _indicatorHeight = indicatorDiameter;
-    _indicatorShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(indicatorDiameter));
-  }
+  const KnobGestureDetector({super.key});
 
   @override
   ConsumerState<KnobGestureDetector> createState() => _KnobGestureDetectorState();
 }
 
 class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
+  // Минимальное и максимальное значения регулятора
+  late MinMaxValue _minMax;
+
+  // Полный диапазон значений регулятора
+  late int _fullValue;
+
   late double _currentPos;
 
   // Предыдущее положение ручки регулятора  в радианах, начальное положение равно _minAngleR
-  late double _prevAngleR;
+  double _prevAngleR = knob_g.startAngleR;
 
   // Последнее известное положение ручки регулятора  в радианах, начальное положение равно _minAngleR
-  late double _finalAngleR;
+  double _finalAngleR = knob_g.startAngleR;
 
   // Направление поворота ручки регуляторо - по часовой
   bool _turnRight = true;
@@ -84,20 +43,23 @@ class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
   late Offset _centerOfGestureDetector;
 
   @override
-  void initState() {
-    super.initState();
-    _prevAngleR = _finalAngleR = widget._startAngleR;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    ref.listen<int>(turnProvider, (previous, next) {
-      if (next == 0) return;
+    _minMax = ref.watch(minMaxProvider);
+
+    _fullValue = _minMax.maxValue - _minMax.minValue;
+
+    ref.listen<int>(buttonPressedProvider, (previous, next) {
       // Отслеживаем нажатие кнопок и изменяем положение ручки регулятора
-      _changeRotate(next);
-      // Метод listen сработает только при изменении состояния, поэтому необходимо обнулить
-      ref.read(turnProvider.notifier).state = 0;
+      _setPosition(_minMax);
     });
+
+    ref.listen<MinMaxValue>(minMaxProvider, (previous, next) {
+      // Изменяем значение полного диапазона значений
+      _fullValue = next.maxValue - next.minValue;
+      // Устанавливаем ручку регулятора в нужное положение
+      _setPosition(next);
+    });
+
     return LayoutBuilder(
       builder: (context, constraints) {
         _centerOfGestureDetector = Offset(constraints.maxWidth / 2, constraints.maxHeight / 2);
@@ -113,13 +75,13 @@ class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
                 // Указатель ручки регулятора, вращаем тень, вращение в обратную сторону
                 child: Container(
                   // Размер указателя
-                  width: widget._indicatorWidth,
-                  height: widget._indicatorHeight,
-                  margin: widget._indicatorMargin,
+                  width: knob_g.indicatorDiameter,
+                  height: knob_g.indicatorDiameter,
+                  margin: knob_g.indicatorMargin,
                   decoration: KnobIndicator(
-                    indicatorShape: widget._indicatorShape,
-                    indicatorDepression: widget._indicatorDepression,
-                    shadowColors: [widget._shadowColors[0], Colors.white],
+                    indicatorShape: knob_g.indicatorShape,
+                    indicatorDepression: knob_g.indicatorDepression,
+                    shadowColors: [knob_g.shadowColors[0], Colors.white],
                   ),
                 ),
               ),
@@ -130,13 +92,13 @@ class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
     );
   }
 
-  _onPanUpdate(DragUpdateDetails details) {
+  void _onPanUpdate(DragUpdateDetails details) {
     final touchPositionFromCenter = details.localPosition - _centerOfGestureDetector;
     // Текущее положение ручки регулятора в радианах
     _currentPos = touchPositionFromCenter.direction;
 
     // Блокируем перемещение по нижней траектории от _minAngle до _maxAngle
-    if (_currentPos < widget._startAngleR && _currentPos > widget._endAngleR) return;
+    if (_currentPos < knob_g.startAngleR && _currentPos > knob_g.endAngleR) return;
 
     if ((_currentPos <= _prevAngleR + 0.1 && _currentPos >= _prevAngleR - 0.1) ||
         (_currentPos >= -pi - 0.1 && _currentPos <= -pi + 0.1) &&
@@ -156,45 +118,48 @@ class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
       _finalAngleR = _currentPos;
 
       // Вычисляем угол поворота указателя на регуляторе, а также значение на которое он указывает
-      if (_currentPos >= widget._startAngleR && _currentPos <= pi) {
+      if (_currentPos >= knob_g.startAngleR && _currentPos <= pi) {
         _indicatorRotate = _currentPos;
-        final data = (_indicatorRotate * 180 / pi - widget._startAngle) * widget._fullValue / widget._fullAngle +
-            widget._scaleMin;
+        final data =
+            (_indicatorRotate * 180 / pi - knob_g.startAngle) * _fullValue / knob_g.fullAngle + _minMax.minValue;
         ref.read(currentArrProvider.notifier).state = data.round();
       } else {
         _indicatorRotate = 2 * pi + _currentPos;
-        final data = (_indicatorRotate * 180 / pi - widget._startAngle) * widget._fullValue / widget._fullAngle +
-            widget._scaleMin;
+        final data =
+            (_indicatorRotate * 180 / pi - knob_g.startAngle) * _fullValue / knob_g.fullAngle + _minMax.minValue;
         ref.read(currentArrProvider.notifier).state = data.round();
       }
+      // Обязательно запрашиваем перерисовку виджета
+      setState(() {});
     }
   }
 
-  void _changeRotate(int next) {
-    switch (next) {
-      case 11:
-        // Переводим ручку регулятора в максимольное положение
-        _finalAngleR = widget._endAngleR;
-        _indicatorRotate = widget._endAngleR;
-      case -11:
-        // Переводим ручку регулятора в минимальное положение
-        _finalAngleR = widget._startAngleR;
-        _indicatorRotate = widget._startAngleR;
-      default:
-        // Если next положительно, поворот по часовой, отрицательно - против часовой
-        final temp = widget._fullAngle * pi / 180;
-        _finalAngleR += temp / widget._fullValue * next;
-        _indicatorRotate += temp / widget._fullValue * next;
+  void _setPosition(MinMaxValue next) {
+    int currentValue = ref.read(currentArrProvider);
+
+    if (currentValue < next.minValue) {
+      // Изменение минимальной границы диапазона
+      ref.read(currentArrProvider.notifier).state = next.minValue;
+      currentValue = next.minValue;
     }
-    // Устанавливаем в переменные новые положения ручки регулятора, без этого
-    // ручка станет недоступна для вращения касанием экрана
+    if (currentValue > next.maxValue) {
+      // Изменение максимальной границы диапазона
+      ref.read(currentArrProvider.notifier).state = next.maxValue;
+      currentValue = next.maxValue;
+    }
+    // Текущее значение регистра ARR не выходит за новые границы диапазона
+    // Перемещаем указатель регулятора в соответствии с новыми границами
+    _finalAngleR = knob_g.fullAngleR / _fullValue * (currentValue - next.minValue) + 2 * pi / 3;
+    _indicatorRotate = _finalAngleR;
+
     if (_finalAngleR > pi) {
-      // Переход через границу с +pi на -pi
-      _currentPos = _finalAngleR - 2 * pi;
-      _prevAngleR = _finalAngleR - 2 * pi;
-    } else {
-      _currentPos = _finalAngleR;
-      _prevAngleR = _finalAngleR;
+      _finalAngleR -= 2 * pi;
     }
+    // Устанавливаем в переменные новые положения ручки регулятора
+    _currentPos = _finalAngleR;
+    _prevAngleR = _finalAngleR;
+
+    // Обязательно запрашиваем перерисовку виджета
+    setState(() {});
   }
 }

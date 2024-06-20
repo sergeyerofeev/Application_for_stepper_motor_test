@@ -12,5 +12,8 @@ const String numberSteps = 'NUMBER_STEPS';
 /// Ключ для хранения PSC ркгистра
 const String psc = 'PSC';
 
-/// Ключ для хранения ARR ркгистра
-const String arr = 'ARR';
+/// Ключ для хранения минимального значения ARR регистра
+const String arrMin = 'ARR_MIN';
+
+/// Ключ для хранения максимального значения ARR регистра
+const String arrMax = 'ARR_MAX';

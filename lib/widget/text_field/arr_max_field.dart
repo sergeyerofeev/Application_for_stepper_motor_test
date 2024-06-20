@@ -5,26 +5,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../provider/provider.dart';
 import '../../settings/key_store.dart' as key_store;
 import 'custom_text_input_formatter.dart';
-import 'decoration_text_field.dart' as decoration;
 import 'function_text_field.dart';
 
-class AutoReloadField extends ConsumerStatefulWidget {
-  const AutoReloadField({super.key});
+class ArrMaxField extends ConsumerStatefulWidget {
+  const ArrMaxField({super.key});
 
   @override
-  ConsumerState<AutoReloadField> createState() => _AutoReloadFieldState();
+  ConsumerState<ArrMaxField> createState() => _ArrMaxFieldState();
 }
 
-class _AutoReloadFieldState extends ConsumerState<AutoReloadField> {
+class _ArrMaxFieldState extends ConsumerState<ArrMaxField> {
   final TextEditingController _textEditingController = TextEditingController(text: '');
 
   @override
   void initState() {
     // Загружаем значение сохранённое при предыдущем запуске приложения
     Future(() async {
-      final arr = await ref.read(storageProvider).get<int>(key_store.arr) ?? 0;
+      final arrMax = await ref.read(storageProvider).get<int>(key_store.arrMax) ?? 65535;
       if (mounted) {
-        setState(() => _textEditingController.text = arr.toString());
+        setState(() => _textEditingController.text = arrMax.toString());
       }
     });
     super.initState();
@@ -38,37 +37,24 @@ class _AutoReloadFieldState extends ConsumerState<AutoReloadField> {
 
   @override
   Widget build(BuildContext context) {
-    final arrError = ref.watch(arrErrorProvider);
+    final arrError = ref.watch(arrMaxErrorProvider);
     return Focus(
       onFocusChange: (hasFocus) {
         if (!hasFocus) {
-          validator(
-            textEditingController: _textEditingController,
-            ref: ref,
-            dataProvider: arrProvider,
-            errorProvider: arrErrorProvider,
-          );
+          validator();
         }
       },
       child: Column(
         children: [
           TextField(
             controller: _textEditingController,
-            style: decoration.textStyle,
+            style: const TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
             decoration: InputDecoration(
-              labelText: 'Значение регистра ARR',
-              labelStyle: decoration.labelStyle,
-              floatingLabelStyle: decoration.floatingLabelStyle,
-              errorStyle: decoration.errorStyle,
-              enabledBorder: decoration.enabledBorder,
-              focusedBorder: decoration.focusedBorder,
-              errorBorder: decoration.errorBorder,
-              focusedErrorBorder: decoration.focusedBorder,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+              labelText: 'MAX значение ARR',
               suffixIcon: clearIconButton(
                 clear: _textEditingController.clear,
                 ref: ref,
-                errorProvider: arrErrorProvider,
+                errorProvider: arrMaxErrorProvider,
               ),
               errorText: arrError,
             ),
@@ -79,16 +65,11 @@ class _AutoReloadFieldState extends ConsumerState<AutoReloadField> {
             onChanged: (value) {
               if (arrError != null) {
                 // Сбрасываем ошибку
-                ref.read(arrErrorProvider.notifier).state = null;
+                ref.read(arrMaxErrorProvider.notifier).state = null;
               }
             },
             onSubmitted: (_) {
-              validator(
-                textEditingController: _textEditingController,
-                ref: ref,
-                dataProvider: arrProvider,
-                errorProvider: arrErrorProvider,
-              );
+              validator();
             },
           ),
           // Задаём отступ для компенсации смещения нижних элементов в случае ошибки
@@ -96,5 +77,27 @@ class _AutoReloadFieldState extends ConsumerState<AutoReloadField> {
         ],
       ),
     );
+  }
+
+  // Функция валидации ввода TextField
+  void validator() {
+    final text = _textEditingController.text.replaceAll(' ', '');
+    final min = ref.read(arrMinProvider);
+    if (text.isEmpty) {
+      // Строка пустая
+      ref.read(arrMaxErrorProvider.notifier).state = 'Пожалуйста введите значение';
+      return;
+    }
+    final value = int.tryParse(text);
+    if (value == null) {
+      ref.read(arrMaxErrorProvider.notifier).state = 'Ошибка преобразования';
+    } else if (value <= min || value > 65535) {
+      ref.read(arrMaxErrorProvider.notifier).state = '$min \u003C значение \u2264 65535';
+    } else {
+      // Отбрасываем начальные нули, добавляем для отделения тысячей, пробелы
+      _textEditingController.text = ExtensionTextField(value).priceString;
+      // Сохраняем преобразованное значение в провайдере
+      ref.read(arrMaxProvider.notifier).state = value;
+    }
   }
 }

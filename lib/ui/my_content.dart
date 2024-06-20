@@ -2,15 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:stepper_motor_test/widget/button/custom_button.dart';
 
-import '../widget/popup_menu/direction_selection.dart';
-import '../widget/popup_menu/step_angle_selection.dart';
-import '../widget/text_field/arr_field.dart';
-import '../widget/text_field/psc_field.dart';
 import '../main.dart';
 import '../provider/provider.dart';
 import '../widget/knob/knob.dart';
+import '../widget/popup_menu/direction_selection.dart';
 import '../widget/popup_menu/micro_step_selection.dart';
+import '../widget/popup_menu/step_angle_selection.dart';
+import '../widget/text_field/arr_min_field.dart';
+import '../widget/text_field/arr_max_field.dart';
+import '../widget/text_field/psc_field.dart';
 
 class MyContent extends ConsumerStatefulWidget {
   const MyContent({super.key});
@@ -51,38 +53,42 @@ class _MyContentState extends ConsumerState<MyContent> {
 
   @override
   Widget build(BuildContext context) {
-    final arrRegister = ref.watch(arrProvider);
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
-      child: Center(
+      child: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            /*Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(flex: 5, child: MicroStepSelection()),
-                const SizedBox(width: 20),
+                const SizedBox(width: 10),
                 Expanded(flex: 5, child: DirectionSelection()),
-                const SizedBox(width: 20),
+                const SizedBox(width: 10),
                 Expanded(flex: 4, child: StepAngleSelection()),
               ],
             ),
             const SizedBox(height: 40),
-            const PrescalerField(),
-            const AutoReloadField(),
-            const SizedBox(height: 20),*/
-
-            const AutoReloadField(),
+            const PscField(),
+            const Row(
+              children: [
+                Expanded(child: ArrMinField()),
+                SizedBox(width: 10),
+                Expanded(child: ArrMaxField()),
+              ],
+            ),
             const SizedBox(height: 20),
-            Knob(
-              knobDiameter: 240,
-              scaleDiameter: 330,
-              scaleMin: 0,
-              scaleMax: arrRegister.toDouble(),
-              indicatorDiameter: 35,
-              scaleFontSize: 18,
+            const Knob(),
+            const SizedBox(height: 40),
+            Row(
+              children: [
+                Expanded(child: customButton()),
+                SizedBox(width: 10),
+                Expanded(child: customButton()),
+                SizedBox(width: 10),
+                Expanded(child: customButton()),
+              ],
             ),
           ],
         ),

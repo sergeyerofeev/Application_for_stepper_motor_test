@@ -14,7 +14,7 @@ Widget clearIconButton({
     child: InkWell(
       borderRadius: BorderRadius.circular(5.0),
       onTap: () {
-        ref.read(errorProvider.notifier).state = 'Пожалуйста введите корректное значение';
+        ref.read(errorProvider.notifier).state = 'Пожалуйста введите значение';
         clear();
       },
       child: const Icon(Icons.clear, color: Colors.grey, size: 25),
@@ -33,34 +33,5 @@ extension ExtensionTextField on int {
       index -= 3;
     }
     return numberDigits.join();
-  }
-}
-
-/// Функция валидации ввода TextField
-void validator({
-  required TextEditingController textEditingController,
-  required WidgetRef ref,
-  required AutoDisposeStateProvider<int> dataProvider,
-  required AutoDisposeStateProvider<String?> errorProvider,
-}) {
-  final text = textEditingController.text.replaceAll(' ', '');
-  if (text.isEmpty) {
-    // Строка пустая
-    ref.read(errorProvider.notifier).state = 'Пожалуйста введите корректное значение';
-    return;
-  }
-  final value = int.tryParse(text);
-  if (value == null) {
-    ref.read(errorProvider.notifier).state = 'Ошибка преобразования';
-  } else if (value == 0) {
-    // Защита от множественного введения нулей
-    textEditingController.text = 0.toString();
-  } else if (value > 65535) {
-    ref.read(errorProvider.notifier).state = 'Значение должно быть меньше, либо равно 65535';
-  } else {
-    // Отбрасываем начальные нули, добавляем для отделения тысячей, пробелы
-    textEditingController.text = ExtensionTextField(value).priceString;
-    // Сохраняем преобразованное значение в провайдере
-    ref.read(dataProvider.notifier).state = value;
   }
 }

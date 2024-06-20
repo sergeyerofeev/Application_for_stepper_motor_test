@@ -1,45 +1,35 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'knob_global.dart' as knob_g;
 
 class KnobScale extends CustomPainter {
-  final double _startValue;
-  final double _endValue;
-  final int _startAngle;
-  final int _endAngle;
-  final double _fontSize;
+  final int _scaleMin;
+  final int _scaleMax;
 
   KnobScale({
-    required double scaleMin,
-    required double scaleMax,
-    required int scaleStartAngle,
-    required int scaleEndAngle,
-    required double scaleFontSize,
-  })  : _startValue = scaleMin,
-        _endValue = scaleMax,
-        _startAngle = scaleStartAngle,
-        _endAngle = scaleEndAngle,
-        _fontSize = scaleFontSize;
+    required int scaleMin,
+    required int scaleMax,
+  })  : _scaleMin = scaleMin,
+        _scaleMax = scaleMax;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.grey
+      ..color = knob_g.scaleColor
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
     final center = Offset(size.width / 2, size.height / 2);
     final radius = min(size.width, size.height) / 2;
-    // Полная шкала в градусах
-    final fullScale = 360 - _startAngle + _endAngle;
 
     // Максимильное количество тиков на шкале
     const maxTick = 100;
     // Величина для одного деления шкалы
-    double valueTick = (_endValue - _startValue) / (1.0 * maxTick);
+    double valueTick = (_scaleMax - _scaleMin) / (1.0 * maxTick);
     // Количество цифр после запятой при выводе числа на шкалу
     final fractionDigits = (valueTick < 0.1) ? 1 : 0;
     for (int i = 0; i <= maxTick; i++) {
-      final angle = (fullScale / maxTick * i + _startAngle) * pi / 180;
+      final angle = (knob_g.fullAngle / maxTick * i + knob_g.startAngle) * pi / 180;
 
       if (i % 10 == 0) {
         // Рисуем длинные линии
@@ -50,18 +40,24 @@ class KnobScale extends CustomPainter {
         // Надписи над линиями
         final textPainter = TextPainter(
           text: TextSpan(
-              text: (_startValue + (valueTick * i)).toStringAsFixed(fractionDigits).replaceFirst('.', ','),
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: _fontSize,
+              text: (_scaleMin + (valueTick * i)).toStringAsFixed(fractionDigits).replaceFirst('.', ','),
+              style: const TextStyle(
+                color: knob_g.scaleColor,
+                fontSize: knob_g.scaleFontSize,
                 fontWeight: FontWeight.bold,
               )),
           textDirection: TextDirection.ltr,
         );
         textPainter.layout();
+        // Расчитываем коэффициент смещения цифр по горизонтали
+        final kdx = (_scaleMax >= 12500)
+            ? 1.22
+            : (_scaleMax >= 1250)
+                ? 1.185
+                : 1.16;
         final textOffset = Offset(
-          center.dx + 1.15 * radius * cos(angle) - textPainter.width / 2,
-          center.dy + 1.1 * radius * sin(angle) - textPainter.height / 2,
+          center.dx + kdx * radius * cos(angle) - textPainter.width / 2,
+          center.dy + 1.11 * radius * sin(angle) - textPainter.height / 2,
         );
         textPainter.paint(canvas, textOffset);
       } else if (i % 5 == 0) {

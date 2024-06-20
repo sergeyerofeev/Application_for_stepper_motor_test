@@ -7,23 +7,23 @@ import '../../settings/key_store.dart' as key_store;
 import 'custom_text_input_formatter.dart';
 import 'function_text_field.dart';
 
-class PscField extends ConsumerStatefulWidget {
-  const PscField({super.key});
+class ArrMinField extends ConsumerStatefulWidget {
+  const ArrMinField({super.key});
 
   @override
-  ConsumerState<PscField> createState() => _PscFieldState();
+  ConsumerState<ArrMinField> createState() => _ArrMinFieldState();
 }
 
-class _PscFieldState extends ConsumerState<PscField> {
+class _ArrMinFieldState extends ConsumerState<ArrMinField> {
   final TextEditingController _textEditingController = TextEditingController(text: '');
 
   @override
   void initState() {
     // Загружаем значение сохранённое при предыдущем запуске приложения
     Future(() async {
-      final psc = await ref.read(storageProvider).get<int>(key_store.psc) ?? 0;
+      final arrMin = await ref.read(storageProvider).get<int>(key_store.arrMin) ?? 0;
       if (mounted) {
-        setState(() => _textEditingController.text = psc.toString());
+        setState(() => _textEditingController.text = arrMin.toString());
       }
     });
     super.initState();
@@ -37,7 +37,7 @@ class _PscFieldState extends ConsumerState<PscField> {
 
   @override
   Widget build(BuildContext context) {
-    final pscError = ref.watch(pscErrorProvider);
+    final arrError = ref.watch(arrMinErrorProvider);
     return Focus(
       onFocusChange: (hasFocus) {
         if (!hasFocus) {
@@ -50,22 +50,22 @@ class _PscFieldState extends ConsumerState<PscField> {
             controller: _textEditingController,
             style: const TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
             decoration: InputDecoration(
-              labelText: 'Значение регистра PSC',
+              labelText: 'MIN значение ARR',
               suffixIcon: clearIconButton(
                 clear: _textEditingController.clear,
                 ref: ref,
-                errorProvider: pscErrorProvider,
+                errorProvider: arrMinErrorProvider,
               ),
-              errorText: pscError,
+              errorText: arrError,
             ),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
               CustomTextInputFormatter(),
             ],
             onChanged: (value) {
-              if (pscError != null) {
+              if (arrError != null) {
                 // Сбрасываем ошибку
-                ref.read(pscErrorProvider.notifier).state = null;
+                ref.read(arrMinErrorProvider.notifier).state = null;
               }
             },
             onSubmitted: (_) {
@@ -73,7 +73,7 @@ class _PscFieldState extends ConsumerState<PscField> {
             },
           ),
           // Задаём отступ для компенсации смещения нижних элементов в случае ошибки
-          pscError != null ? const SizedBox(height: 17) : const SizedBox(height: 42),
+          arrError != null ? const SizedBox(height: 17) : const SizedBox(height: 42),
         ],
       ),
     );
@@ -82,22 +82,22 @@ class _PscFieldState extends ConsumerState<PscField> {
   // Функция валидации ввода TextField
   void validator() {
     final text = _textEditingController.text.replaceAll(' ', '');
-
+    final max = ref.read(arrMaxProvider);
     if (text.isEmpty) {
       // Строка пустая
-      ref.read(pscErrorProvider.notifier).state = 'Пожалуйста введите значение';
+      ref.read(arrMinErrorProvider.notifier).state = 'Пожалуйста введите значение';
       return;
     }
     final value = int.tryParse(text);
     if (value == null) {
-      ref.read(pscErrorProvider.notifier).state = 'Ошибка преобразования';
-    } else if (value < 0 || value > 65535) {
-      ref.read(pscErrorProvider.notifier).state = '0 \u2264 значение \u2264 65535';
+      ref.read(arrMinErrorProvider.notifier).state = 'Ошибка преобразования';
+    } else if (value < 0 || value >= max) {
+      ref.read(arrMinErrorProvider.notifier).state = '0 \u2264 значение \u003C $max';
     } else {
       // Отбрасываем начальные нули, добавляем для отделения тысячей, пробелы
       _textEditingController.text = ExtensionTextField(value).priceString;
       // Сохраняем преобразованное значение в провайдере
-      ref.read(pscProvider.notifier).state = value;
+      ref.read(arrMinProvider.notifier).state = value;
     }
   }
 }
