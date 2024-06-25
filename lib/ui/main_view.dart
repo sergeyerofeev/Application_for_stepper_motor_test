@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'my_content.dart';
 import '../widget/draggeble_app_bar.dart';
+import 'my_content.dart';
 import 'theme/basic_theme.dart';
 
 class MainView extends StatelessWidget {
@@ -12,15 +12,21 @@ class MainView extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: basicTheme(),
-      home: const DecoratedBox(
-        decoration: BoxDecoration(
-          color: Color(0xFFFEFEFE),
-          image: DecorationImage(
-            image: AssetImage('assets/background.png'),
-            fit: BoxFit.cover,
+      home: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFECECEC),
+              Color(0xFFFFFFFF),
+              Color(0xFFFFFFFF),
+              Color(0xFFECECEC),
+            ],
+            stops: [0.26, 0.585, 0.625, 0.95],
           ),
         ),
-        child: Scaffold(
+        child: const Scaffold(
           appBar: DraggebleAppBar(),
           body: MyContent(),
         ),

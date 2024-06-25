@@ -29,23 +29,15 @@ class MicroStepSelection extends ConsumerWidget {
         selectStep = 'Выбрано 1/16 шага';
     }
 
-    return Container(
+    return SizedBox(
       key: btnKey,
       height: 48.0,
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        border: Border.all(color: Colors.grey, width: 2.0),
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(2.0),
-        onTap: () => onDismissOnlyBeCalledOnce(context),
-        child: Center(
-          child: Text(
-            selectStep,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold),
-          ),
+      child: ElevatedButton(
+        onPressed: () => onDismissOnlyBeCalledOnce(context),
+        child: Text(
+          selectStep,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold),
         ),
       ),
     );

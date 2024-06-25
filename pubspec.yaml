@@ -20,6 +20,7 @@ dependencies:
   window_manager: ^0.3.8
   flutter_single_instance: ^0.0.1
   popup_menu_plus: ^0.0.6
+  flutter_svg_provider: ^1.0.7
 
 dev_dependencies:
   flutter_test:

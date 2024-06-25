@@ -38,6 +38,10 @@ class _ArrMinFieldState extends ConsumerState<ArrMinField> {
   @override
   Widget build(BuildContext context) {
     final arrError = ref.watch(arrMinErrorProvider);
+    ref.listen<int>(arrMaxProvider, (previous, next) {
+      validator();
+    });
+
     return Focus(
       onFocusChange: (hasFocus) {
         if (!hasFocus) {
@@ -98,6 +102,10 @@ class _ArrMinFieldState extends ConsumerState<ArrMinField> {
       _textEditingController.text = ExtensionTextField(value).priceString;
       // Сохраняем преобразованное значение в провайдере
       ref.read(arrMinProvider.notifier).state = value;
+      // Если была установлена ошибка сбрасываем
+      if (ref.read(arrMinErrorProvider) != null) {
+        ref.read(arrMinErrorProvider.notifier).state = null;
+      }
     }
   }
 }

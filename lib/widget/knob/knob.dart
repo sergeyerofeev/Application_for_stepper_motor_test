@@ -61,12 +61,13 @@ class _KnobState extends ConsumerState<Knob> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 30),
         Consumer(
           builder: (_, ref, __) {
             final currentValue = ref.watch(currentArrProvider);
             final minMaxValue = ref.watch(minMaxProvider);
             final fullValue = minMaxValue.maxValue - minMaxValue.minValue;
+            final step = knob_g.calcJamp(fullValue);
             return SizedBox(
               // Ширину строки кнопок выбираем по размеру диаметра шкалы регулятора добавив 50 px
               width: knob_g.scaleDiameter + 50,
@@ -77,30 +78,30 @@ class _KnobState extends ConsumerState<Knob> {
                   ElevatedButton(
                     onPressed: (currentValue > minMaxValue.minValue)
                         ? () {
-                            if (currentValue - 1 < minMaxValue.minValue) {
+                            if (currentValue - step.$1 < minMaxValue.minValue) {
                               ref.read(currentArrProvider.notifier).state = minMaxValue.minValue;
                             } else {
-                              ref.read(currentArrProvider.notifier).update((state) => state - 1);
+                              ref.read(currentArrProvider.notifier).update((state) => state - step.$1);
                             }
                             // Просто изменяем state, чтобы вызвать listen()
                             ref.read(buttonPressedProvider.notifier).state--;
                           }
                         : null,
-                    child: const Text('-1'),
+                    child: Text('-${step.$1}'),
                   ),
                   const SizedBox(width: 10),
                   ElevatedButton(
-                    onPressed: (currentValue > minMaxValue.minValue && fullValue > 10)
+                    onPressed: (currentValue > minMaxValue.minValue && fullValue > step.$2)
                         ? () {
-                            if (currentValue - 10 < minMaxValue.minValue) {
+                            if (currentValue - step.$2 < minMaxValue.minValue) {
                               ref.read(currentArrProvider.notifier).state = minMaxValue.minValue;
                             } else {
-                              ref.read(currentArrProvider.notifier).update((state) => state - 10);
+                              ref.read(currentArrProvider.notifier).update((state) => state - step.$2);
                             }
                             ref.read(buttonPressedProvider.notifier).state--;
                           }
                         : null,
-                    child: const Text('-10'),
+                    child: Text('-${step.$2}'),
                   ),
                   const Spacer(),
                   Text(
@@ -109,31 +110,31 @@ class _KnobState extends ConsumerState<Knob> {
                   ),
                   const Spacer(),
                   ElevatedButton(
-                    onPressed: (currentValue < minMaxValue.maxValue && fullValue > 10)
+                    onPressed: (currentValue < minMaxValue.maxValue && fullValue > step.$2)
                         ? () {
-                            if (currentValue + 10 > minMaxValue.maxValue) {
+                            if (currentValue + step.$2 > minMaxValue.maxValue) {
                               ref.read(currentArrProvider.notifier).state = minMaxValue.maxValue;
                             } else {
-                              ref.read(currentArrProvider.notifier).update((state) => state + 10);
+                              ref.read(currentArrProvider.notifier).update((state) => state + step.$2);
                             }
                             ref.read(buttonPressedProvider.notifier).state++;
                           }
                         : null,
-                    child: const Text('+10'),
+                    child: Text('+${step.$2}'),
                   ),
                   const SizedBox(width: 10),
                   ElevatedButton(
                     onPressed: (currentValue < minMaxValue.maxValue)
                         ? () {
-                            if (currentValue + 1 > minMaxValue.maxValue) {
+                            if (currentValue + step.$1 > minMaxValue.maxValue) {
                               ref.read(currentArrProvider.notifier).state = minMaxValue.maxValue;
                             } else {
-                              ref.read(currentArrProvider.notifier).update((state) => state + 1);
+                              ref.read(currentArrProvider.notifier).update((state) => state + step.$1);
                             }
                             ref.read(buttonPressedProvider.notifier).state++;
                           }
                         : null,
-                    child: const Text('+1'),
+                    child: Text('+${step.$1}'),
                   ),
                 ],
               ),

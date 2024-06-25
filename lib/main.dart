@@ -30,7 +30,7 @@ void main() async {
   final double? dx = sharedPreferences.getDouble(key_store.offsetX);
   final double? dy = sharedPreferences.getDouble(key_store.offsetY);
 
-  const initialSize = Size(590, 840);
+  const initialSize = Size(590, 862);
   WindowOptions windowOptions = const WindowOptions(
     size: initialSize,
     //minimumSize: initialSize,

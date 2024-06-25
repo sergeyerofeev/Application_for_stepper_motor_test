@@ -50,11 +50,13 @@ class KnobScale extends CustomPainter {
         );
         textPainter.layout();
         // Расчитываем коэффициент смещения цифр по горизонтали
-        final kdx = (_scaleMax >= 12500)
-            ? 1.22
-            : (_scaleMax >= 1250)
-                ? 1.185
-                : 1.16;
+        final kdx = (_scaleMax - _scaleMin < 10 && _scaleMax >= 10000)
+            ? 1.25
+            : (_scaleMax >= 12500 || (_scaleMax - _scaleMin < 10 && _scaleMax >= 1000))
+                ? 1.22
+                : (_scaleMax >= 1250 || (_scaleMax - _scaleMin < 10 && _scaleMax >= 100))
+                    ? 1.185
+                    : 1.16;
         final textOffset = Offset(
           center.dx + kdx * radius * cos(angle) - textPainter.width / 2,
           center.dy + 1.11 * radius * sin(angle) - textPainter.height / 2,

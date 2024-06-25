@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../provider/provider.dart';
 
+import '../../provider/provider.dart';
 import 'menu_config.dart';
 import 'menu_item.dart';
 import 'popup_menu.dart';
@@ -23,23 +23,15 @@ class DirectionSelection extends ConsumerWidget {
         directionSelect = 'Направление Dir = 1';
     }
 
-    return Container(
+    return SizedBox(
       key: btnKey,
       height: 48.0,
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        border: Border.all(color: Colors.grey, width: 2.0),
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(2.0),
-        onTap: () => onDismissOnlyBeCalledOnce(context),
-        child: Center(
-          child: Text(
-            directionSelect,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold),
-          ),
+      child: ElevatedButton(
+        onPressed: () => onDismissOnlyBeCalledOnce(context),
+        child: Text(
+          directionSelect,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold),
         ),
       ),
     );
