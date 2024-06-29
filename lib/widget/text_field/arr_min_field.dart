@@ -102,10 +102,6 @@ class _ArrMinFieldState extends ConsumerState<ArrMinField> {
       _textEditingController.text = ExtensionTextField(value).priceString;
       // Сохраняем преобразованное значение в провайдере
       ref.read(arrMinProvider.notifier).state = value;
-      // Если была установлена ошибка сбрасываем
-      if (ref.read(arrMinErrorProvider) != null) {
-        ref.read(arrMinErrorProvider.notifier).state = null;
-      }
     }
   }
 }

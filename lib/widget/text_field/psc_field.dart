@@ -38,6 +38,8 @@ class _PscFieldState extends ConsumerState<PscField> {
   @override
   Widget build(BuildContext context) {
     final pscError = ref.watch(pscErrorProvider);
+    final rotation = ref.watch<bool>(rotationProvider);
+
     return Focus(
       onFocusChange: (hasFocus) {
         if (!hasFocus) {
@@ -48,7 +50,17 @@ class _PscFieldState extends ConsumerState<PscField> {
         children: [
           TextField(
             controller: _textEditingController,
-            style: const TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+            // Если вращение запущено, запрещаем редактирование
+            enabled: !rotation,
+            style: MaterialStateTextStyle.resolveWith(
+              (Set<MaterialState> states) {
+                if (states.contains(MaterialState.disabled)) {
+                  return const TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold);
+                } else {
+                  return const TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold);
+                }
+              },
+            ),
             decoration: InputDecoration(
               labelText: 'Значение регистра PSC',
               suffixIcon: clearIconButton(

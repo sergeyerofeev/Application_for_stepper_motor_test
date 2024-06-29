@@ -14,31 +14,23 @@ class MicroStepSelection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final microStep = ref.watch<int>(microStepProvider);
-    late final String selectStep;
+    final rotation = ref.watch<bool>(rotationProvider);
 
-    switch (microStep) {
-      case 0:
-        selectStep = 'Выбран полный шаг';
-      case 1:
-        selectStep = 'Выбрано 1/2 шага';
-      case 2:
-        selectStep = 'Выбрано 1/4 шага';
-      case 3:
-        selectStep = 'Выбрано 1/8 шага';
-      case 4:
-        selectStep = 'Выбрано 1/16 шага';
-    }
+    final String selectStep = switch (microStep) {
+      0 => 'Выбран полный шаг',
+      1 => 'Выбрано 1/2 шага',
+      2 => 'Выбрано 1/4 шага',
+      3 => 'Выбрано 1/8 шага',
+      4 => 'Выбрано 1/16 шага',
+      _ => 'Недопустимое\nзначение',
+    };
 
     return SizedBox(
       key: btnKey,
       height: 48.0,
       child: ElevatedButton(
-        onPressed: () => onDismissOnlyBeCalledOnce(context),
-        child: Text(
-          selectStep,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold),
-        ),
+        onPressed: (!rotation) ? () => onDismissOnlyBeCalledOnce(context) : null,
+        child: Text(selectStep, textAlign: TextAlign.center),
       ),
     );
   }

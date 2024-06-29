@@ -10,7 +10,7 @@ class DraggebleAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    bool isHidConnect = ref.watch(hidProvider);
+    bool isHidConnect = ref.watch(connectProvider);
 
     return Container(
       decoration: const BoxDecoration(
@@ -66,6 +66,46 @@ class DraggebleAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       if (dy != position.dy) {
                         await ref.read(storageProvider).set<double>(key_store.offsetY, position.dy);
                       }
+                      // Проверяем на совпадение с сохранёным значением и если есть отличие  сохраняем
+                      // в хранилище новые значения микро шага, направления вращения и угла шага двигателя
+                      final oldMicroStep = await ref.read(storageProvider).get<int>(key_store.microStep);
+                      final newMicroStep = ref.read(microStepProvider);
+                      if (newMicroStep != oldMicroStep) {
+                        await ref.read(storageProvider).set<int>(key_store.microStep, newMicroStep);
+                      }
+                      //
+                      final oldDir = await ref.read(storageProvider).get<int>(key_store.dir);
+                      final newDir = ref.read(directionProvider);
+                      if (newDir != oldDir) {
+                        await ref.read(storageProvider).set<int>(key_store.dir, newDir);
+                      }
+                      //
+                      final oldStepAngle = await ref.read(storageProvider).get<int>(key_store.stepAngle);
+                      final newStepAngle = ref.read(stepAngleProvider);
+                      if (newStepAngle != oldStepAngle) {
+                        await ref.read(storageProvider).set<int>(key_store.stepAngle, newStepAngle);
+                      }
+
+                      // Проверяем и сохраняем значения регистра PSC и min, max регистра ARR
+                      final oldPsc = await ref.read(storageProvider).get<int>(key_store.psc);
+                      final newPsc = ref.read(pscProvider);
+                      if (newPsc != oldPsc && ref.read(pscErrorProvider) == null) {
+                        await ref.read(storageProvider).set<int>(key_store.psc, newPsc);
+                      }
+                      //
+                      final oldArrMin = await ref.read(storageProvider).get<int>(key_store.arrMin);
+                      final newArrMin = ref.read(arrMinProvider);
+                      if (newArrMin != oldArrMin && ref.read(arrMinErrorProvider) == null) {
+                        await ref.read(storageProvider).set<int>(key_store.arrMin, newArrMin);
+                      }
+                      //
+                      final oldArrMax = await ref.read(storageProvider).get<int>(key_store.arrMax);
+                      final newArrMax = ref.read(arrMaxProvider);
+                      if (newArrMax != oldArrMax && ref.read(arrMaxErrorProvider) == null) {
+                        await ref.read(storageProvider).set<int>(key_store.arrMax, newArrMax);
+                      }
+
+                      // После всех сохранений закрываем приложение
                       await windowManager.close();
                     },
                   ),

@@ -14,25 +14,20 @@ class DirectionSelection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final direction = ref.watch<int>(directionProvider);
-    late final String directionSelect;
+    final rotation = ref.watch<bool>(rotationProvider);
 
-    switch (direction) {
-      case 0:
-        directionSelect = 'Направление Dir = 0';
-      case 1:
-        directionSelect = 'Направление Dir = 1';
-    }
+    final String directionSelect = switch (direction) {
+      0 => 'Направление Dir = 0',
+      1 => 'Направление Dir = 1',
+      _ => 'Недопустимое\nзначение',
+    };
 
     return SizedBox(
       key: btnKey,
       height: 48.0,
       child: ElevatedButton(
-        onPressed: () => onDismissOnlyBeCalledOnce(context),
-        child: Text(
-          directionSelect,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold),
-        ),
+        onPressed: (!rotation) ? () => onDismissOnlyBeCalledOnce(context) : null,
+        child: Text(directionSelect, textAlign: TextAlign.center),
       ),
     );
   }

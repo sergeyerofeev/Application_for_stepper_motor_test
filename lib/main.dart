@@ -29,12 +29,20 @@ void main() async {
   // Извлекаем из хранилища положение окна на экране монитора
   final double? dx = sharedPreferences.getDouble(key_store.offsetX);
   final double? dy = sharedPreferences.getDouble(key_store.offsetY);
+  // Извлекаем из хранилища значения микро шага, направления вращения и угла шага двигателя
+  final microStep = sharedPreferences.getInt(key_store.microStep);
+  final dir = sharedPreferences.getInt(key_store.dir);
+  final stepAngle = sharedPreferences.getInt(key_store.stepAngle);
+  // Извлекаем из хранилища значения регистра PSC и min, max регистра ARR
+  final psc = sharedPreferences.getInt(key_store.psc);
+  final arrMin = sharedPreferences.getInt(key_store.arrMin);
+  final arrMax = sharedPreferences.getInt(key_store.arrMax);
 
   const initialSize = Size(590, 862);
   WindowOptions windowOptions = const WindowOptions(
     size: initialSize,
-    //minimumSize: initialSize,
-    //maximumSize: initialSize,
+    minimumSize: initialSize,
+    maximumSize: initialSize,
     skipTaskbar: false,
     title: 'Stepper motor test',
     // Скрыть панель с кнопками Windows
@@ -50,14 +58,20 @@ void main() async {
       await windowManager.setPosition(Offset(dx, dy));
     }
     // Размещаем приложение поверх других окон
-    /*await windowManager.setAlwaysOnTop(true);
+    await windowManager.setAlwaysOnTop(true);
     await windowManager.show();
-    await windowManager.focus();*/
+    await windowManager.focus();
   });
 
   runApp(ProviderScope(
     overrides: [
-      storageProvider.overrideWithValue(MyStorage(sharedPreferences)),
+      storageProvider.overrideWith((ref) => MyStorage(sharedPreferences)),
+      microStepProvider.overrideWith((ref) => microStep ?? 0),
+      directionProvider.overrideWith((ref) => dir ?? 0),
+      stepAngleProvider.overrideWith((ref) => stepAngle ?? 0),
+      pscProvider.overrideWith((ref) => psc ?? 0),
+      arrMinProvider.overrideWith((ref) => arrMin ?? 0),
+      arrMaxProvider.overrideWith((ref) => arrMax ?? 65535),
     ],
     child: const MainView(),
   ));

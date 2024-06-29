@@ -6,8 +6,14 @@ library;
 const String offsetX = 'OFFSET_X';
 const String offsetY = 'OFFSET_Y';
 
-/// Ключ для хранения количества шагов двигателя
-const String numberSteps = 'NUMBER_STEPS';
+/// Ключ для хранения значение микрошага
+const String microStep = 'MICRO_STEP';
+
+/// Ключ для хранения значение направления вращения Dir
+const String dir = 'DIR';
+
+/// Ключ для хранения значение угла шага
+const String stepAngle = 'STEP_ANGLE';
 
 /// Ключ для хранения PSC ркгистра
 const String psc = 'PSC';

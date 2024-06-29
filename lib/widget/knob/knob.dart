@@ -67,7 +67,13 @@ class _KnobState extends ConsumerState<Knob> {
             final currentValue = ref.watch(currentArrProvider);
             final minMaxValue = ref.watch(minMaxProvider);
             final fullValue = minMaxValue.maxValue - minMaxValue.minValue;
-            final step = knob_g.calcJamp(fullValue);
+            // Вычислим в зависимости от полного диапазона, на сколько будем перемещаться
+            // по шкале при нажатии кнопок. Возвращаем меньший $1 и больший $2 шаг.
+            final step = switch (fullValue) {
+              > 10000 => (100, 1000),
+              > 1000 => (10, 100),
+              _ => (1, 10),
+            };
             return SizedBox(
               // Ширину строки кнопок выбираем по размеру диаметра шкалы регулятора добавив 50 px
               width: knob_g.scaleDiameter + 50,

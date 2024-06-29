@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:stepper_motor_test/widget/button/custom_button.dart';
+import 'package:stepper_motor_test/widget/button/control_buttons.dart';
 
 import '../main.dart';
 import '../provider/provider.dart';
@@ -30,15 +30,15 @@ class _MyContentState extends ConsumerState<MyContent> {
       hidTimer = Timer.periodic(const Duration(seconds: 1), (_) {
         // Выполнив функцию hid.open(), при подключенном устройстве, обмен разрешается
         int hidConnect = hid.open();
-        bool hidStatus = ref.read(hidProvider);
+        bool hidStatus = ref.read(connectProvider);
         if (hidConnect == 0 && !hidStatus) {
           // Установим статус поключения, true - связь с устройством установлена
-          ref.read(hidProvider.notifier).update((_) => true);
+          ref.read(connectProvider.notifier).update((_) => true);
         } else if (hidConnect != 0 && hidStatus) {
           // В случае разрыва связи, закрываем текущий hid
           hid.close();
           // Устанавливаем статус в false
-          ref.read(hidProvider.notifier).update((_) => false);
+          ref.read(connectProvider.notifier).update((_) => false);
         }
       });
     });
@@ -81,15 +81,7 @@ class _MyContentState extends ConsumerState<MyContent> {
             const SizedBox(height: 30),
             const Knob(),
             const SizedBox(height: 40),
-            Row(
-              children: [
-                Expanded(child: singleRotation()),
-                const SizedBox(width: 10),
-                Expanded(child: continuousRotation()),
-                const SizedBox(width: 10),
-                Expanded(child: stopRotation()),
-              ],
-            ),
+            const ControlButtons(),
           ],
         ),
       ),

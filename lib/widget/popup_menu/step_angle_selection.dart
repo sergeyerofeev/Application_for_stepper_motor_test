@@ -14,31 +14,23 @@ class StepAngleSelection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stepAngle = ref.watch<int>(stepAngleProvider);
-    late final String selectAngle;
+    final rotation = ref.watch<bool>(rotationProvider);
 
-    switch (stepAngle) {
-      case 0:
-        selectAngle = 'Угол шага 0,9\u00B0';
-      case 1:
-        selectAngle = 'Угол шага 1,8\u00B0';
-      case 2:
-        selectAngle = 'Угол шага 3,6\u00B0';
-      case 3:
-        selectAngle = 'Угол шага 5,625\u00B0';
-      case 4:
-        selectAngle = 'Угол шага 7,5\u00B0';
-    }
+    final String selectAngle = switch (stepAngle) {
+      0 => 'Угол шага 0,9\u00B0',
+      1 => 'Угол шага 1,8\u00B0',
+      2 => 'Угол шага 3,6\u00B0',
+      3 => 'Угол шага 5,625\u00B0',
+      4 => 'Угол шага 7,5\u00B0',
+      _ => 'Недопустимое\nзначение',
+    };
 
     return SizedBox(
       key: btnKey,
       height: 48.0,
       child: ElevatedButton(
-        onPressed: () => onDismissOnlyBeCalledOnce(context),
-        child: Text(
-          selectAngle,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold),
-        ),
+        onPressed: (!rotation) ? () => onDismissOnlyBeCalledOnce(context) : null,
+        child: Text(selectAngle, textAlign: TextAlign.center),
       ),
     );
   }

@@ -102,10 +102,6 @@ class _ArrMaxFieldState extends ConsumerState<ArrMaxField> {
       _textEditingController.text = ExtensionTextField(value).priceString;
       // Сохраняем преобразованное значение в провайдере
       ref.read(arrMaxProvider.notifier).state = value;
-      // Если была установлена ошибка сбрасываем
-      if (ref.read(arrMaxErrorProvider) != null) {
-        ref.read(arrMaxErrorProvider.notifier).state = null;
-      }
     }
   }
 }

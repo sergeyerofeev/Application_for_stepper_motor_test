@@ -9,22 +9,22 @@ ElevatedButtonThemeData elevatedButtonTheme() => ElevatedButtonThemeData(
         elevation: const MaterialStatePropertyAll<double>(10.0),
         shadowColor: const MaterialStatePropertyAll<Color>(Colors.white30),
         foregroundColor: MaterialStateProperty.resolveWith(
-          (states) {
-            return states.contains(MaterialState.disabled) ? Colors.grey : Colors.black;
-          },
+          (states) => states.contains(MaterialState.disabled) ? Colors.grey : Colors.black,
         ),
         surfaceTintColor: const MaterialStatePropertyAll<Color>(Colors.white),
         padding: const MaterialStatePropertyAll(EdgeInsets.all(10.0)),
-        side: const MaterialStatePropertyAll(BorderSide(color: Colors.grey, width: 2)),
+        side: MaterialStateProperty.resolveWith(
+          (states) => states.contains(MaterialState.disabled)
+              ? BorderSide(color: Colors.grey.shade300, width: 2)
+              : const BorderSide(color: Colors.blueGrey, width: 2),
+        ),
         shape: MaterialStatePropertyAll(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5.0),
           ),
         ),
         overlayColor: MaterialStateProperty.resolveWith(
-          (states) {
-            return states.contains(MaterialState.pressed) ? Colors.grey[300] : Colors.white;
-          },
+          (states) => states.contains(MaterialState.pressed) ? Colors.grey[300] : Colors.white70,
         ),
       ),
     );

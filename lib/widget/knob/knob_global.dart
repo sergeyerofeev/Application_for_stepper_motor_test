@@ -32,13 +32,3 @@ const double indicatorDiameter = 40.0;
 const double indicatorDepression = 4.0;
 const EdgeInsets indicatorMargin = EdgeInsets.all(10.0);
 final ShapeBorder indicatorShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(indicatorDiameter));
-
-// Вычислим в зависимости от полного диапазона, на сколько будем перемещаться
-// по шкале при нажатии кнопок. Задаём меньший и больший шаг.
-(int, int) calcJamp(int sum) {
-  return switch (sum) {
-    > 10000 => (100, 1000),
-    > 1000 => (10, 100),
-    _ => (1, 10),
-  };
-}
