@@ -23,7 +23,9 @@ class _ArrMaxFieldState extends ConsumerState<ArrMaxField> {
     Future(() async {
       final arrMax = await ref.read(storageProvider).get<int>(key_store.arrMax) ?? 65535;
       if (mounted) {
-        setState(() => _textEditingController.text = arrMax.toString());
+        // Если число больше либо равно 1000 добавляем пробелы, для отделения тысячей
+        setState(() =>
+            _textEditingController.text = arrMax < 1000 ? arrMax.toString() : ExtensionTextField(arrMax).priceString);
       }
     });
     super.initState();

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +13,6 @@ import 'settings/key_store.dart' as key_store;
 import 'ui/main_view.dart';
 
 HID hid = HID(idVendor: 1148, idProduct: 22348);
-late Uint8List rawData;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

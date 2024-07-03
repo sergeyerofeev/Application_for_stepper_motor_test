@@ -23,7 +23,9 @@ class _ArrMinFieldState extends ConsumerState<ArrMinField> {
     Future(() async {
       final arrMin = await ref.read(storageProvider).get<int>(key_store.arrMin) ?? 0;
       if (mounted) {
-        setState(() => _textEditingController.text = arrMin.toString());
+        // Если число больше либо равно 1000 добавляем пробелы, для отделения тысячей
+        setState(() =>
+            _textEditingController.text = arrMin < 1000 ? arrMin.toString() : ExtensionTextField(arrMin).priceString);
       }
     });
     super.initState();

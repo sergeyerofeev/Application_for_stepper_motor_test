@@ -1,6 +1,9 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stepper_motor_test/provider/provider.dart';
+
+import '../../main.dart';
 import 'button_global.dart' as button_g;
 
 class ControlButtons extends ConsumerWidget {
@@ -21,9 +24,11 @@ class ControlButtons extends ConsumerWidget {
             height: button_g.height,
             child: ElevatedButton(
               onPressed: (isConnect && !isRotation && pscError == null && arrMinError == null && arrMaxError == null)
-                  ? () {
+                  ? () async {
                       // Устанавливаем флаг, чтобы сделать кнопки запуска не активными
                       ref.read(rotationProvider.notifier).state = true;
+                      // Отправляем данные
+                      await _sendData(ref, 3);
                     }
                   : null,
               child: button_g.buttonTitle(text: 'Один оборот'),
@@ -36,9 +41,11 @@ class ControlButtons extends ConsumerWidget {
             height: button_g.height,
             child: ElevatedButton(
               onPressed: (isConnect && !isRotation && pscError == null && arrMinError == null && arrMaxError == null)
-                  ? () {
+                  ? () async {
                       // Устанавливаем флаг, чтобы сделать кнопки запуска не активными
                       ref.read(rotationProvider.notifier).state = true;
+                      // Отправляем данные
+                      await _sendData(ref, 4);
                     }
                   : null,
               child: button_g.buttonTitle(text: 'Непрерывное вращение'),
@@ -54,8 +61,11 @@ class ControlButtons extends ConsumerWidget {
                 side: MaterialStatePropertyAll(BorderSide(color: Color(0xFFFF0000), width: 2)),
               ),
               onPressed: (isConnect)
-                  ? () {
+                  ? () async {
+                      // Делаем кнопки запуска активными
                       ref.read(rotationProvider.notifier).state = false;
+                      // Отправляем данные
+                      await _sendData(ref, 1);
                     }
                   : null,
               child: button_g.buttonTitle(textColor: const Color(0xFFFF0000), text: 'Стоп'),
@@ -64,5 +74,30 @@ class ControlButtons extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  Future<void> _sendData(WidgetRef ref, int reportId) async {
+    // Формируем и отправляем данные
+    late final Uint8List list;
+    if (reportId == 1) {
+      // Команда на остановку двигателя
+      list = Uint8List.fromList([0, reportId, ...List.filled(7, 0)]);
+    } else {
+      final List<int> data = List.filled(7, 0);
+      // reportId = 3 - команда на один оборот, reportId = 4 - команда на непрерывное вращение
+      data[0] = ref.read(microStepProvider);
+      data[1] = ref.read(directionProvider);
+      data[2] = ref.read(stepAngleProvider);
+      final pscReg = ref.read(pscProvider);
+      data[3] = pscReg >> 8; // Загружаем старший байт для регистра PSC
+      data[4] = pscReg & 0xFF; // Загружаем младший байт для регистра PSC
+      final arrReg = ref.read(currentArrProvider);
+      data[5] = arrReg >> 8; // Загружаем старший байт для регистра ARR
+      data[6] = arrReg & 0xFF; // Загружаем младший байт для регистра ARR
+      list = Uint8List.fromList([0, reportId, ...data]);
+    }
+    if (hid.open() == 0) {
+      await hid.write(list);
+    }
   }
 }

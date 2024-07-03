@@ -23,7 +23,8 @@ class _PscFieldState extends ConsumerState<PscField> {
     Future(() async {
       final psc = await ref.read(storageProvider).get<int>(key_store.psc) ?? 0;
       if (mounted) {
-        setState(() => _textEditingController.text = psc.toString());
+        // Если число больше либо равно 1000 добавляем пробелы, для отделения тысячей
+        setState(() => _textEditingController.text = psc < 1000 ? psc.toString() : ExtensionTextField(psc).priceString);
       }
     });
     super.initState();

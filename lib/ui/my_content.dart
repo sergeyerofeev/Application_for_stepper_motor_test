@@ -33,12 +33,12 @@ class _MyContentState extends ConsumerState<MyContent> {
         bool hidStatus = ref.read(connectProvider);
         if (hidConnect == 0 && !hidStatus) {
           // Установим статус поключения, true - связь с устройством установлена
-          ref.read(connectProvider.notifier).update((_) => true);
+          ref.read(connectProvider.notifier).state = true;
         } else if (hidConnect != 0 && hidStatus) {
           // В случае разрыва связи, закрываем текущий hid
           hid.close();
           // Устанавливаем статус в false
-          ref.read(connectProvider.notifier).update((_) => false);
+          ref.read(connectProvider.notifier).state = false;
         }
       });
     });
