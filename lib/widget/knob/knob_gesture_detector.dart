@@ -16,11 +16,12 @@ class KnobGestureDetector extends ConsumerStatefulWidget {
 }
 
 class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
-  // Минимальное и максимальное значения регулятора
-  late MinMaxValue _minMax;
-
-  // Полный диапазон значений регулятора
-  late int _fullValue;
+  @override
+  void initState() {
+    // При запуске приложения устанавливаем ручку регулятора в соответствии с ранее сохранённым значением
+    _setPosition(ref.read(minMaxProvider));
+    super.initState();
+  }
 
   late double _currentPos;
 
@@ -44,19 +45,13 @@ class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
 
   @override
   Widget build(BuildContext context) {
-    _minMax = ref.watch(minMaxProvider);
-
-    _fullValue = _minMax.maxValue - _minMax.minValue;
-
     ref.listen<int>(buttonPressedProvider, (previous, next) {
       // Отслеживаем нажатие кнопок и изменяем положение ручки регулятора
-      _setPosition(_minMax);
+      _setPosition(ref.read(minMaxProvider));
     });
 
     ref.listen<MinMaxValue>(minMaxProvider, (previous, next) {
-      // Изменяем значение полного диапазона значений
-      _fullValue = next.maxValue - next.minValue;
-      // Устанавливаем ручку регулятора в нужное положение
+      // Изменилась нижняя или верхняя граница диапазона, корректируем положение ручки регулятора
       _setPosition(next);
     });
 
@@ -93,6 +88,11 @@ class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
+    int minValue = ref.read(minMaxProvider).minValue;
+    int maxValue = ref.read(minMaxProvider).maxValue;
+    // Полный диапазон значений регулятора
+    int fullValue = maxValue - minValue;
+
     final touchPositionFromCenter = details.localPosition - _centerOfGestureDetector;
     // Текущее положение ручки регулятора в радианах
     _currentPos = touchPositionFromCenter.direction;
@@ -120,13 +120,11 @@ class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
       // Вычисляем угол поворота указателя на регуляторе, а также значение на которое он указывает
       if (_currentPos >= knob_g.startAngleR && _currentPos <= pi) {
         _indicatorRotate = _currentPos;
-        final data =
-            (_indicatorRotate * 180 / pi - knob_g.startAngle) * _fullValue / knob_g.fullAngle + _minMax.minValue;
+        final data = (_indicatorRotate * 180 / pi - knob_g.startAngle) * fullValue / knob_g.fullAngle + minValue;
         ref.read(currentArrProvider.notifier).state = data.round();
       } else {
         _indicatorRotate = 2 * pi + _currentPos;
-        final data =
-            (_indicatorRotate * 180 / pi - knob_g.startAngle) * _fullValue / knob_g.fullAngle + _minMax.minValue;
+        final data = (_indicatorRotate * 180 / pi - knob_g.startAngle) * fullValue / knob_g.fullAngle + minValue;
         ref.read(currentArrProvider.notifier).state = data.round();
       }
       // Обязательно запрашиваем перерисовку виджета
@@ -136,6 +134,8 @@ class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
 
   void _setPosition(MinMaxValue next) {
     int currentValue = ref.read(currentArrProvider);
+    // Полный диапазон значений регулятора
+    int fullValue = next.maxValue - next.minValue;
 
     if (currentValue < next.minValue) {
       // Изменение минимальной границы диапазона
@@ -149,7 +149,7 @@ class _KnobGestureDetectorState extends ConsumerState<KnobGestureDetector> {
     }
     // Текущее значение регистра ARR не выходит за новые границы диапазона
     // Перемещаем указатель регулятора в соответствии с новыми границами
-    _finalAngleR = knob_g.fullAngleR / _fullValue * (currentValue - next.minValue) + 2 * pi / 3;
+    _finalAngleR = knob_g.fullAngleR / fullValue * (currentValue - next.minValue) + 2 * pi / 3;
     _indicatorRotate = _finalAngleR;
 
     if (_finalAngleR > pi) {

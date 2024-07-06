@@ -31,7 +31,7 @@ final arrMaxProvider = StateProvider.autoDispose<int>((ref) => throw Unimplement
 final arrMaxErrorProvider = StateProvider.autoDispose<String?>((ref) => null);
 
 // Провайдер текущего, передаваемого на микроконтроллер, значения ARR регистра
-final currentArrProvider = StateProvider.autoDispose<int>((ref) => ref.read(arrMinProvider));
+final currentArrProvider = StateProvider.autoDispose<int>((ref) => throw UnimplementedError());
 
 // Провайдер отслеживания нажатия кнопок изменения положения ручки регулятора
 final buttonPressedProvider = StateProvider.autoDispose<int>((ref) => 0);
@@ -54,4 +54,13 @@ final rotationProvider = StateProvider.autoDispose<bool>((ref) {
   // Если произошёл обрыв соединения USB выключаем флаг запуска двигателя
   if (!isConnect) return false;
   return false;
+});
+
+// Провайдер установки текущего значения ARR, если двигатель вращается
+final currentSendProvider = Provider.autoDispose<int?>((ref) {
+  // Если двигатель остановлен rotationProvider == false, возвращаем null
+  if (!ref.watch(rotationProvider)) return null;
+
+  // Иначе передаём текущее значение ARR
+  return ref.watch(currentArrProvider);
 });

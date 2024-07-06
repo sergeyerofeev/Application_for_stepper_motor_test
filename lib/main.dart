@@ -31,10 +31,11 @@ void main() async {
   final microStep = sharedPreferences.getInt(key_store.microStep);
   final dir = sharedPreferences.getInt(key_store.dir);
   final stepAngle = sharedPreferences.getInt(key_store.stepAngle);
-  // Извлекаем из хранилища значения регистра PSC и min, max регистра ARR
+  // Извлекаем из хранилища значения регистра PSC и выбранное, min, max значения регистра ARR
   final psc = sharedPreferences.getInt(key_store.psc);
   final arrMin = sharedPreferences.getInt(key_store.arrMin);
   final arrMax = sharedPreferences.getInt(key_store.arrMax);
+  final currentArr = sharedPreferences.getInt(key_store.currentArr);
 
   const initialSize = Size(590, 862);
   WindowOptions windowOptions = const WindowOptions(
@@ -68,6 +69,7 @@ void main() async {
       directionProvider.overrideWith((ref) => dir ?? 0),
       stepAngleProvider.overrideWith((ref) => stepAngle ?? 0),
       pscProvider.overrideWith((ref) => psc ?? 0),
+      currentArrProvider.overrideWith((ref) => currentArr ?? arrMin ?? 0),
       arrMinProvider.overrideWith((ref) => arrMin ?? 0),
       arrMaxProvider.overrideWith((ref) => arrMax ?? 65535),
     ],

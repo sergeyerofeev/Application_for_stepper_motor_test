@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../provider/provider.dart';
-import '../../settings/key_store.dart' as key_store;
 import 'custom_text_input_formatter.dart';
 import 'function_text_field.dart';
 
@@ -19,15 +18,13 @@ class _ArrMinFieldState extends ConsumerState<ArrMinField> {
 
   @override
   void initState() {
-    // Загружаем значение сохранённое при предыдущем запуске приложения
-    Future(() async {
-      final arrMin = await ref.read(storageProvider).get<int>(key_store.arrMin) ?? 0;
-      if (mounted) {
-        // Если число больше либо равно 1000 добавляем пробелы, для отделения тысячей
-        setState(() =>
-            _textEditingController.text = arrMin < 1000 ? arrMin.toString() : ExtensionTextField(arrMin).priceString);
-      }
-    });
+    // Загружаем сохранённое значение
+    final arrMin = ref.read(arrMinProvider);
+    if (mounted) {
+      // Если число больше либо равно 1000 добавляем пробелы, для отделения тысячей
+      setState(() =>
+          _textEditingController.text = arrMin < 1000 ? arrMin.toString() : ExtensionTextField(arrMin).priceString);
+    }
     super.initState();
   }
 

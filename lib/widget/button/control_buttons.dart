@@ -7,6 +7,8 @@ import '../../main.dart';
 import 'button_global.dart' as button_g;
 
 class ControlButtons extends ConsumerWidget {
+  static bool _flagSendData = true;
+
   const ControlButtons({super.key});
 
   @override
@@ -16,6 +18,18 @@ class ControlButtons extends ConsumerWidget {
     final arrMaxError = ref.watch(arrMaxErrorProvider);
     final isRotation = ref.watch(rotationProvider);
     final isConnect = ref.watch(connectProvider);
+
+    ref.listen(currentSendProvider, (previous, next) async {
+      if (_flagSendData && next != null && previous != null) {
+        _flagSendData = false;
+        await Future.delayed(const Duration(seconds: 10), () async {
+          if (hid.open() == 0) {
+            await hid.write(Uint8List.fromList([0, /*reportId = */ 2, next >> 8, next & 0xFF, ...List.filled(5, 0)]));
+          }
+          _flagSendData = true;
+        });
+      }
+    });
 
     return Row(
       children: [

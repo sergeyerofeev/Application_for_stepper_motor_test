@@ -86,7 +86,7 @@ class DraggebleAppBar extends ConsumerWidget implements PreferredSizeWidget {
                         await ref.read(storageProvider).set<int>(key_store.stepAngle, newStepAngle);
                       }
 
-                      // Проверяем и сохраняем значения регистра PSC и min, max регистра ARR
+                      // Проверяем и сохраняем значения регистра PSC и выбранное, min, max значения регистра ARR
                       final oldPsc = await ref.read(storageProvider).get<int>(key_store.psc);
                       final newPsc = ref.read(pscProvider);
                       if (newPsc != oldPsc && ref.read(pscErrorProvider) == null) {
@@ -103,6 +103,14 @@ class DraggebleAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       final newArrMax = ref.read(arrMaxProvider);
                       if (newArrMax != oldArrMax && ref.read(arrMaxErrorProvider) == null) {
                         await ref.read(storageProvider).set<int>(key_store.arrMax, newArrMax);
+                      }
+                      //
+                      final oldCurrentArr = await ref.read(storageProvider).get<int>(key_store.currentArr);
+                      final newCurrentArr = ref.read(currentArrProvider);
+                      if (newCurrentArr != oldCurrentArr &&
+                          ref.read(arrMinErrorProvider) == null &&
+                          ref.read(arrMaxErrorProvider) == null) {
+                        await ref.read(storageProvider).set<int>(key_store.currentArr, newCurrentArr);
                       }
 
                       // После всех сохранений закрываем приложение
