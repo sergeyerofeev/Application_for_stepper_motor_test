@@ -19,10 +19,11 @@ class ControlButtons extends ConsumerWidget {
     final isRotation = ref.watch(rotationProvider);
     final isConnect = ref.watch(connectProvider);
 
+    // Двигатель включен, передаём текущее значение для регистра ARR
     ref.listen(currentSendProvider, (previous, next) async {
       if (_flagSendData && next != null && previous != null) {
         _flagSendData = false;
-        await Future.delayed(const Duration(seconds: 10), () async {
+        await Future.delayed(const Duration(milliseconds: 100), () async {
           if (hid.open() == 0) {
             await hid.write(Uint8List.fromList([0, /*reportId = */ 2, next >> 8, next & 0xFF, ...List.filled(5, 0)]));
           }
