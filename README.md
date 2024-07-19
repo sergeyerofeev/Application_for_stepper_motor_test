@@ -1,4 +1,11 @@
-# stepper_motor_test
+## stepper_motor_test
 
-Приложение для тестирования шагового двигателя
+#### Программа для тестирования шагового двигателя
+
+<p align="center">
+    <img src="git_image/image.png" style="height: 909; width: 637; object-fit: contain">
+</p>
+
+#### Описание
+Приложение для операционной системы Windows.
 

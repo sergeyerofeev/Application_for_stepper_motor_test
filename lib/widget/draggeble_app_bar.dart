@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
+import '../main.dart';
 import '../provider/provider.dart';
 import '../settings/key_store.dart' as key_store;
 
@@ -55,6 +58,11 @@ class DraggebleAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   ),
                   WindowCaptionButton.close(
                     onPressed: () async {
+                      // Отправляем на STM32 сигнал остановки вращения
+                      if (hid.open() == 0) {
+                        await hid.write(Uint8List.fromList([0, /*reportId = */ 1, ...List.filled(7, 0)]));
+                      }
+                      //
                       // Получим и сохраним положение окна на экране монитора
                       final position = await windowManager.getPosition();
                       final dx = await ref.read(storageProvider).get<double>(key_store.offsetX);

@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stepper_motor_test/provider/provider.dart';
@@ -6,13 +7,27 @@ import 'package:stepper_motor_test/provider/provider.dart';
 import '../../main.dart';
 import 'button_global.dart' as button_g;
 
-class ControlButtons extends ConsumerWidget {
-  static bool _flagSendData = true;
-
+class ControlButtons extends ConsumerStatefulWidget {
   const ControlButtons({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ControlButtons> createState() => _ControlButtonsState();
+}
+
+class _ControlButtonsState extends ConsumerState<ControlButtons> {
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    if (_timer != null) {
+      _timer!.cancel();
+      _timer = null;
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final pscError = ref.watch(pscErrorProvider);
     final arrMinError = ref.watch(arrMinErrorProvider);
     final arrMaxError = ref.watch(arrMaxErrorProvider);
@@ -21,13 +36,18 @@ class ControlButtons extends ConsumerWidget {
 
     // Двигатель включен, передаём текущее значение для регистра ARR
     ref.listen(currentSendProvider, (previous, next) async {
-      if (_flagSendData && next != null && previous != null) {
-        _flagSendData = false;
-        await Future.delayed(const Duration(milliseconds: 100), () async {
+      if (next != null) {
+        if (_timer != null) {
+          // Если таймер в данный момент работает, сбрасываем его
+          _timer!.cancel();
+        }
+
+        _timer = Timer(const Duration(milliseconds: 100), () async {
           if (hid.open() == 0) {
             await hid.write(Uint8List.fromList([0, /*reportId = */ 2, next >> 8, next & 0xFF, ...List.filled(5, 0)]));
           }
-          _flagSendData = true;
+          // По окончании выполнения callback функции устанавливаем _timer в null
+          _timer = null;
         });
       }
     });
