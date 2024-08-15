@@ -31,13 +31,14 @@ void main() async {
   final microStep = sharedPreferences.getInt(key_store.microStep);
   final dir = sharedPreferences.getInt(key_store.dir);
   final stepAngle = sharedPreferences.getInt(key_store.stepAngle);
-  // Извлекаем из хранилища значения регистра PSC и выбранное, min, max значения регистра ARR
+  // Извлекаем из хранилища значения SYSCLK, PSC и выбранное, min, max значения регистра ARR
+  final sysclk = sharedPreferences.getInt(key_store.sysclk);
   final psc = sharedPreferences.getInt(key_store.psc);
   final arrMin = sharedPreferences.getInt(key_store.arrMin);
   final arrMax = sharedPreferences.getInt(key_store.arrMax);
   final currentArr = sharedPreferences.getInt(key_store.currentArr);
 
-  const initialSize = Size(590, 862);
+  const initialSize = Size(590, 910);
   WindowOptions windowOptions = const WindowOptions(
     size: initialSize,
     minimumSize: initialSize,
@@ -60,6 +61,8 @@ void main() async {
     await windowManager.setAlwaysOnTop(true);
     await windowManager.show();
     await windowManager.focus();
+    // Запрещаем изменение размеров окна, стрелки на границах окна не отображаются
+    await windowManager.setResizable(false);
   });
 
   runApp(ProviderScope(
@@ -68,6 +71,7 @@ void main() async {
       microStepProvider.overrideWith((ref) => microStep ?? 0),
       directionProvider.overrideWith((ref) => dir ?? 0),
       stepAngleProvider.overrideWith((ref) => stepAngle ?? 0),
+      sysclkProvider.overrideWith((ref) => (sysclk ?? 48000000,)),
       pscProvider.overrideWith((ref) => psc ?? 0),
       currentArrProvider.overrideWith((ref) => currentArr ?? arrMin ?? 0),
       arrMinProvider.overrideWith((ref) => arrMin ?? 0),

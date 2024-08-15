@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../provider/provider.dart';
+import '../../settings/extension.dart';
 import 'custom_text_input_formatter.dart';
 import 'function_text_field.dart';
 
@@ -20,11 +21,10 @@ class _ArrMinFieldState extends ConsumerState<ArrMinField> {
   void initState() {
     // Загружаем сохранённое значение
     final arrMin = ref.read(arrMinProvider);
-    if (mounted) {
-      // Если число больше либо равно 1000 добавляем пробелы, для отделения тысячей
-      setState(() =>
-          _textEditingController.text = arrMin < 1000 ? arrMin.toString() : ExtensionTextField(arrMin).priceString);
-    }
+    // Если число больше либо равно 1000 добавляем пробелы, для отделения тысячей
+    _textEditingController.text = arrMin < 1000 ? arrMin.toString() : SeparateIntWithSpaces(arrMin).priceString;
+    setState(() {});
+
     super.initState();
   }
 
@@ -98,9 +98,15 @@ class _ArrMinFieldState extends ConsumerState<ArrMinField> {
       ref.read(arrMinErrorProvider.notifier).state = '0 \u2264 значение \u003C $max';
     } else {
       // Отбрасываем начальные нули, добавляем для отделения тысячей, пробелы
-      _textEditingController.text = ExtensionTextField(value).priceString;
-      // Сохраняем преобразованное значение в провайдере
-      ref.read(arrMinProvider.notifier).state = value;
+      final intToStr = SeparateIntWithSpaces(value).priceString;
+      if (_textEditingController.text.length != intToStr.length) {
+        // Перезаписываем поле ввода только при изменении длины, т.е. были начальные нули
+        _textEditingController.text = intToStr;
+      }
+      if (value != ref.read(arrMinProvider)) {
+        // Сохраняем преобразованное значение в провайдере
+        ref.read(arrMinProvider.notifier).state = value;
+      }
     }
   }
 }

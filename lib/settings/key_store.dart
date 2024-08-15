@@ -15,6 +15,9 @@ const String dir = 'DIR';
 // Ключ для хранения значение угла шага
 const String stepAngle = 'STEP_ANGLE';
 
+// Ключ для хранения тактовой частоты SYSCLK
+const String sysclk = 'SYSCLK';
+
 // Ключ для хранения PSC ркгистра
 const String psc = 'PSC';
 

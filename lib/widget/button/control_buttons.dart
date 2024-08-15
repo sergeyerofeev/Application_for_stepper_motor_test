@@ -44,6 +44,7 @@ class _ControlButtonsState extends ConsumerState<ControlButtons> {
 
         _timer = Timer(const Duration(milliseconds: 100), () async {
           if (hid.open() == 0) {
+            // Вычитаем 1 из значения для регистра ARR
             await hid.write(Uint8List.fromList([0, /*reportId = */ 2, next >> 8, next & 0xFF, ...List.filled(5, 0)]));
           }
           // По окончании выполнения callback функции устанавливаем _timer в null
@@ -123,10 +124,12 @@ class _ControlButtonsState extends ConsumerState<ControlButtons> {
       data[0] = ref.read(microStepProvider);
       data[1] = ref.read(directionProvider);
       data[2] = ref.read(stepAngleProvider);
-      final pscReg = ref.read(pscProvider);
+      // Вычитаем 1 из значения для регистра PSC
+      final pscReg = ref.read(pscProvider) - 1;
       data[3] = pscReg >> 8; // Загружаем старший байт для регистра PSC
       data[4] = pscReg & 0xFF; // Загружаем младший байт для регистра PSC
-      final arrReg = ref.read(currentArrProvider);
+      // Вычитаем 1 из значения для регистра ARR
+      final arrReg = ref.read(currentArrProvider) - 1;
       data[5] = arrReg >> 8; // Загружаем старший байт для регистра ARR
       data[6] = arrReg & 0xFF; // Загружаем младший байт для регистра ARR
       list = Uint8List.fromList([0, reportId, ...data]);

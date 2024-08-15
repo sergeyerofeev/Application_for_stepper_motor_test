@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stepper_motor_test/widget/button/control_buttons.dart';
+import 'package:stepper_motor_test/widget/text_field/sysclk_field.dart';
 
 import '../main.dart';
 import '../provider/provider.dart';
@@ -22,33 +23,60 @@ class MyContent extends ConsumerStatefulWidget {
 }
 
 class _MyContentState extends ConsumerState<MyContent> {
-  late final Timer hidTimer;
-
   @override
   void initState() {
-    Future(() {
-      hidTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-        // Выполнив функцию hid.open(), при подключенном устройстве, обмен разрешается
-        int hidConnect = hid.open();
-        bool hidStatus = ref.read(connectProvider);
-        if (hidConnect == 0 && !hidStatus) {
-          // Установим статус поключения, true - связь с устройством установлена
-          ref.read(connectProvider.notifier).state = true;
-        } else if (hidConnect != 0 && hidStatus) {
-          // В случае разрыва связи, закрываем текущий hid
-          hid.close();
-          // Устанавливаем статус в false
-          ref.read(connectProvider.notifier).state = false;
-        }
-      });
-    });
+    Future(() => _hidOpen());
     super.initState();
   }
 
   @override
   void dispose() {
-    hidTimer.cancel();
     super.dispose();
+  }
+
+  void _hidOpen() {
+    if (hid.open() != 0) {
+      Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (hid.open() == 0) {
+          // Установим статус поключения, true - связь с устройством установлена
+          ref.read(connectProvider.notifier).state = true;
+          timer.cancel();
+          _hidRead();
+        }
+      });
+    } else {
+      // Ожидание установки соединенения не требуется
+      // Установим статус поключения в true
+      ref.read(connectProvider.notifier).state = true;
+      _hidRead();
+    }
+  }
+
+  void _hidRead() async {
+    Timer.periodic(const Duration(milliseconds: 500), (timer) async {
+      try {
+        final rawData = await hid.read(timeout: 10);
+        // Если получили null, значит произошло отключение usb устройства
+        if (rawData == null) throw Exception();
+        if (rawData.isNotEmpty) {
+          switch (rawData[0]) {
+            case 5:
+              // Оборот завершён, устанавливаем провайдер в false
+              ref.read(rotationProvider.notifier).state = false;
+            case 7:
+              // Получили значение тактовой частоты
+              final sysclkValue = rawData[1] << 24 | rawData[2] << 16 | rawData[3] << 8 | rawData[4];
+              ref.read(sysclkProvider.notifier).state = (sysclkValue,);
+          }
+        }
+      } catch (e) {
+        // Устанавливаем статус подключения в false
+        ref.read(connectProvider.notifier).state = false;
+        timer.cancel();
+        hid.close();
+        _hidOpen();
+      }
+    });
   }
 
   @override
@@ -70,7 +98,13 @@ class _MyContentState extends ConsumerState<MyContent> {
               ],
             ),
             const SizedBox(height: 40),
-            const PscField(),
+            const Row(
+              children: [
+                Expanded(child: SysClkField()),
+                SizedBox(width: 10),
+                Expanded(child: PscField()),
+              ],
+            ),
             const Row(
               children: [
                 Expanded(child: ArrMinField()),
@@ -78,9 +112,9 @@ class _MyContentState extends ConsumerState<MyContent> {
                 Expanded(child: ArrMaxField()),
               ],
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 25),
             const Knob(),
-            const SizedBox(height: 40),
+            const SizedBox(height: 25),
             const ControlButtons(),
           ],
         ),

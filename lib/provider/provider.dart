@@ -18,6 +18,10 @@ final directionProvider = StateProvider.autoDispose<int>((ref) => throw Unimplem
 // Провайдер выбора значения угла шага двигателя
 final stepAngleProvider = StateProvider.autoDispose<int>((ref) => throw UnimplementedError());
 
+// Провайдер значения тактовой частоты SYSCLK
+final sysclkProvider = StateProvider.autoDispose<(int,)>((ref) => throw UnimplementedError());
+final sysclkErrorProvider = StateProvider.autoDispose<String?>((ref) => null);
+
 // Провайдер значения PSC регистра
 final pscProvider = StateProvider<int>((ref) => throw UnimplementedError());
 final pscErrorProvider = StateProvider.autoDispose<String?>((ref) => null);

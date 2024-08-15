@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../provider/provider.dart';
-import '../../settings/key_store.dart' as key_store;
+import '../../settings/extension.dart';
 import 'custom_text_input_formatter.dart';
 import 'function_text_field.dart';
 
@@ -19,14 +19,12 @@ class _PscFieldState extends ConsumerState<PscField> {
 
   @override
   void initState() {
-    // Загружаем значение сохранённое при предыдущем запуске приложения
-    Future(() async {
-      final psc = await ref.read(storageProvider).get<int>(key_store.psc) ?? 0;
-      if (mounted) {
-        // Если число больше либо равно 1000 добавляем пробелы, для отделения тысячей
-        setState(() => _textEditingController.text = psc < 1000 ? psc.toString() : ExtensionTextField(psc).priceString);
-      }
-    });
+    // Загружаем сохранённое значение
+    final psc = ref.read(pscProvider);
+    // Если число больше либо равно 1000 добавляем пробелы, для отделения тысячей
+    _textEditingController.text = psc < 1000 ? psc.toString() : SeparateIntWithSpaces(psc).priceString;
+    setState(() {});
+
     super.initState();
   }
 
@@ -108,9 +106,15 @@ class _PscFieldState extends ConsumerState<PscField> {
       ref.read(pscErrorProvider.notifier).state = '0 \u2264 значение \u2264 65535';
     } else {
       // Отбрасываем начальные нули, добавляем для отделения тысячей, пробелы
-      _textEditingController.text = ExtensionTextField(value).priceString;
-      // Сохраняем преобразованное значение в провайдере
-      ref.read(pscProvider.notifier).state = value;
+      final intToStr = SeparateIntWithSpaces(value).priceString;
+      if (_textEditingController.text.length != intToStr.length) {
+        // Перезаписываем поле ввода только при изменении длины, т.е. были начальные нули
+        _textEditingController.text = intToStr;
+      }
+      if (value != ref.read(pscProvider)) {
+        // Сохраняем преобразованное значение в провайдере
+        ref.read(pscProvider.notifier).state = value;
+      }
     }
   }
 }

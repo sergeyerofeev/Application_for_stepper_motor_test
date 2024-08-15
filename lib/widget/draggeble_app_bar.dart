@@ -31,11 +31,9 @@ class DraggebleAppBar extends ConsumerWidget implements PreferredSizeWidget {
           SizedBox(
             height: kWindowCaptionHeight,
             child: DragToResizeArea(
-              enableResizeEdges: const [
-                ResizeEdge.topLeft,
-                ResizeEdge.top,
-                ResizeEdge.topRight,
-              ],
+              // Даже при глобальном запрете изменять границы окна, верхняя граница
+              // будет показывать стрелку, поэтому обнуляем resizeEdgeSize
+              resizeEdgeSize: 0,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -94,7 +92,13 @@ class DraggebleAppBar extends ConsumerWidget implements PreferredSizeWidget {
                         await ref.read(storageProvider).set<int>(key_store.stepAngle, newStepAngle);
                       }
 
-                      // Проверяем и сохраняем значения регистра PSC и выбранное, min, max значения регистра ARR
+                      // Проверяем и сохраняем значения SYSCLK, PSC и выбранное, min, max значения регистра ARR
+                      final oldSysClk = await ref.read(storageProvider).get<int>(key_store.sysclk);
+                      final newSysClk = ref.read(sysclkProvider).$1;
+                      if (newSysClk != oldSysClk && ref.read(sysclkErrorProvider) == null) {
+                        await ref.read(storageProvider).set<int>(key_store.sysclk, newSysClk);
+                      }
+                      //
                       final oldPsc = await ref.read(storageProvider).get<int>(key_store.psc);
                       final newPsc = ref.read(pscProvider);
                       if (newPsc != oldPsc && ref.read(pscErrorProvider) == null) {

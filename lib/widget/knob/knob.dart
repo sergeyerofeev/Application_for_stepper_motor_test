@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'knob_global.dart' as knob_g;
 import '../../provider/provider.dart';
+import '../../settings/extension.dart';
 import 'knob_gesture_detector.dart';
+import 'knob_global.dart' as knob_g;
 import 'knob_scale.dart';
 
 class Knob extends ConsumerStatefulWidget {
@@ -61,9 +62,11 @@ class _KnobState extends ConsumerState<Knob> {
             ),
           ],
         ),
-        const SizedBox(height: 30),
+        const SizedBox(height: 25),
         Consumer(
           builder: (_, ref, __) {
+            final sysclk = ref.watch(sysclkProvider).$1;
+            final psc = ref.watch(pscProvider);
             final currentValue = ref.watch(currentArrProvider);
             final minMaxValue = ref.watch(minMaxProvider);
             final fullValue = minMaxValue.maxValue - minMaxValue.minValue;
@@ -75,12 +78,11 @@ class _KnobState extends ConsumerState<Knob> {
               _ => (1, 10),
             };
             return SizedBox(
-              // Ширину строки кнопок выбираем по размеру диаметра шкалы регулятора добавив 50 px
-              width: knob_g.scaleDiameter + 50,
               // Строка кнопок для дискретного управления
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  const Spacer(),
                   ElevatedButton(
                     onPressed: (currentValue > minMaxValue.minValue)
                         ? () {
@@ -109,12 +111,35 @@ class _KnobState extends ConsumerState<Knob> {
                         : null,
                     child: Text('-${step.$2}'),
                   ),
-                  const Spacer(),
-                  Text(
-                    currentValue.toString(),
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  const SizedBox(width: 10),
+                  Column(
+                    children: [
+                      const Text(
+                        'Регистр ARR',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        SeparateIntWithSpaces(currentValue).priceString,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 5),
+                      Container(
+                        color: Colors.blueGrey,
+                        width: 150,
+                        height: 2,
+                      ),
+                      const SizedBox(height: 5),
+                      const Text(
+                        'Частота, Гц',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        SeparateDoubleWithSpaces(sysclk / psc / currentValue / 2).priceString,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 10),
                   ElevatedButton(
                     onPressed: (currentValue < minMaxValue.maxValue && fullValue > step.$2)
                         ? () {
@@ -142,6 +167,7 @@ class _KnobState extends ConsumerState<Knob> {
                         : null,
                     child: Text('+${step.$1}'),
                   ),
+                  const Spacer(),
                 ],
               ),
             );

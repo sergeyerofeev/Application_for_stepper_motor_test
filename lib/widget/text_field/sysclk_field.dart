@@ -7,22 +7,22 @@ import '../../settings/extension.dart';
 import 'custom_text_input_formatter.dart';
 import 'function_text_field.dart';
 
-class ArrMaxField extends ConsumerStatefulWidget {
-  const ArrMaxField({super.key});
+class SysClkField extends ConsumerStatefulWidget {
+  const SysClkField({super.key});
 
   @override
-  ConsumerState<ArrMaxField> createState() => _ArrMaxFieldState();
+  ConsumerState<SysClkField> createState() => _SysClkFieldState();
 }
 
-class _ArrMaxFieldState extends ConsumerState<ArrMaxField> {
+class _SysClkFieldState extends ConsumerState<SysClkField> {
   final TextEditingController _textEditingController = TextEditingController(text: '');
 
   @override
   void initState() {
     // Загружаем сохранённое значение
-    final arrMax = ref.read(arrMaxProvider);
+    final sysclk = ref.read(sysclkProvider).$1;
     // Если число больше либо равно 1000 добавляем пробелы, для отделения тысячей
-    _textEditingController.text = arrMax < 1000 ? arrMax.toString() : SeparateIntWithSpaces(arrMax).priceString;
+    _textEditingController.text = sysclk < 1000 ? sysclk.toString() : SeparateIntWithSpaces(sysclk).priceString;
     setState(() {});
 
     super.initState();
@@ -36,9 +36,13 @@ class _ArrMaxFieldState extends ConsumerState<ArrMaxField> {
 
   @override
   Widget build(BuildContext context) {
-    final arrError = ref.watch(arrMaxErrorProvider);
-    ref.listen<int>(arrMinProvider, (previous, next) {
-      validator();
+    final sysclkError = ref.watch(sysclkErrorProvider);
+    final rotation = ref.watch<bool>(rotationProvider);
+
+    ref.listen(sysclkProvider, (previous, next) {
+      // Добавляем для отделения тысячей, пробелы
+      _textEditingController.text = SeparateIntWithSpaces(next.$1).priceString;
+      setState(() {});
     });
 
     return Focus(
@@ -51,24 +55,30 @@ class _ArrMaxFieldState extends ConsumerState<ArrMaxField> {
         children: [
           TextField(
             controller: _textEditingController,
-            style: const TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+            // Если вращение запущено, запрещаем редактирование
+            enabled: !rotation,
+            style: MaterialStateTextStyle.resolveWith(
+              (Set<MaterialState> states) {
+                if (states.contains(MaterialState.disabled)) {
+                  return const TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold);
+                } else {
+                  return const TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold);
+                }
+              },
+            ),
             decoration: InputDecoration(
-              labelText: 'MAX значение ARR',
-              suffixIcon: clearIconButton(
-                clear: _textEditingController.clear,
-                ref: ref,
-                errorProvider: arrMaxErrorProvider,
-              ),
-              errorText: arrError,
+              labelText: 'Значение SYSCLK',
+              suffixIcon: getSysClkButton(),
+              errorText: sysclkError,
             ),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
               CustomTextInputFormatter(),
             ],
             onChanged: (value) {
-              if (arrError != null) {
+              if (sysclkError != null) {
                 // Сбрасываем ошибку
-                ref.read(arrMaxErrorProvider.notifier).state = null;
+                ref.read(sysclkErrorProvider.notifier).state = null;
               }
             },
             onSubmitted: (_) {
@@ -76,7 +86,7 @@ class _ArrMaxFieldState extends ConsumerState<ArrMaxField> {
             },
           ),
           // Задаём отступ для компенсации смещения нижних элементов в случае ошибки
-          arrError != null ? const SizedBox(height: 17) : const SizedBox(height: 42),
+          sysclkError != null ? const SizedBox(height: 17) : const SizedBox(height: 42),
         ],
       ),
     );
@@ -85,17 +95,17 @@ class _ArrMaxFieldState extends ConsumerState<ArrMaxField> {
   // Функция валидации ввода TextField
   void validator() {
     final text = _textEditingController.text.replaceAll(' ', '');
-    final min = ref.read(arrMinProvider);
+
     if (text.isEmpty) {
       // Строка пустая
-      ref.read(arrMaxErrorProvider.notifier).state = 'Пожалуйста введите значение';
+      ref.read(sysclkErrorProvider.notifier).state = 'Пожалуйста введите значение';
       return;
     }
     final value = int.tryParse(text);
     if (value == null) {
-      ref.read(arrMaxErrorProvider.notifier).state = 'Ошибка преобразования';
-    } else if (value <= min || value > 65535) {
-      ref.read(arrMaxErrorProvider.notifier).state = '$min \u003C значение \u2264 65535';
+      ref.read(sysclkErrorProvider.notifier).state = 'Ошибка преобразования';
+    } else if (value < 0 || value > 400000000) {
+      ref.read(sysclkErrorProvider.notifier).state = '0 \u2264 значение \u2264 400 000 000';
     } else {
       // Отбрасываем начальные нули, добавляем для отделения тысячей, пробелы
       final intToStr = SeparateIntWithSpaces(value).priceString;
@@ -103,9 +113,9 @@ class _ArrMaxFieldState extends ConsumerState<ArrMaxField> {
         // Перезаписываем поле ввода только при изменении длины, т.е. были начальные нули
         _textEditingController.text = intToStr;
       }
-      if (value != ref.read(arrMaxProvider)) {
+      if (value != ref.read(sysclkProvider).$1) {
         // Сохраняем преобразованное значение в провайдере
-        ref.read(arrMaxProvider.notifier).state = value;
+        ref.read(sysclkProvider.notifier).state = (value,);
       }
     }
   }
