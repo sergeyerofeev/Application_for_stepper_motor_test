@@ -61,10 +61,10 @@ final rotationProvider = StateProvider.autoDispose<bool>((ref) {
 });
 
 // Провайдер установки текущего значения ARR, если двигатель вращается
-final currentSendProvider = Provider.autoDispose<int?>((ref) {
+final currentSendProvider = Provider.autoDispose<int>((ref) {
   // Если двигатель остановлен rotationProvider == false, возвращаем null
-  if (!ref.watch(rotationProvider)) return null;
+  if (!ref.watch(rotationProvider)) return 0;
 
-  // Иначе передаём текущее значение ARR
+  // Иначе передаём текущее значение ARR, которое не может быть 0
   return ref.watch(currentArrProvider);
 });

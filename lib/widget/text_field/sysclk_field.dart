@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../provider/provider.dart';
 import '../../settings/extension.dart';
-import 'custom_text_input_formatter.dart';
-import 'function_text_field.dart';
+import 'input_formatter_for_int.dart';
+import 'functions_for_text_field.dart';
 
 class SysClkField extends ConsumerStatefulWidget {
   const SysClkField({super.key});
@@ -73,7 +73,7 @@ class _SysClkFieldState extends ConsumerState<SysClkField> {
             ),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-              CustomTextInputFormatter(),
+              InputFormatterForInt(),
             ],
             onChanged: (value) {
               if (sysclkError != null) {

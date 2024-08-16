@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../provider/provider.dart';
 import '../../settings/extension.dart';
-import 'custom_text_input_formatter.dart';
-import 'function_text_field.dart';
+import 'input_formatter_for_int.dart';
+import 'functions_for_text_field.dart';
 
 class ArrMinField extends ConsumerStatefulWidget {
   const ArrMinField({super.key});
@@ -63,7 +63,7 @@ class _ArrMinFieldState extends ConsumerState<ArrMinField> {
             ),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-              CustomTextInputFormatter(),
+              InputFormatterForInt(),
             ],
             onChanged: (value) {
               if (arrError != null) {
@@ -94,8 +94,8 @@ class _ArrMinFieldState extends ConsumerState<ArrMinField> {
     final value = int.tryParse(text);
     if (value == null) {
       ref.read(arrMinErrorProvider.notifier).state = 'Ошибка преобразования';
-    } else if (value < 0 || value >= max) {
-      ref.read(arrMinErrorProvider.notifier).state = '0 \u2264 значение \u003C $max';
+    } else if (value < 1 || value >= max) {
+      ref.read(arrMinErrorProvider.notifier).state = '1 \u2264 значение \u003C $max';
     } else {
       // Отбрасываем начальные нули, добавляем для отделения тысячей, пробелы
       final intToStr = SeparateIntWithSpaces(value).priceString;

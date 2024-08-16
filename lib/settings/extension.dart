@@ -3,10 +3,11 @@ extension SeparateIntWithSpaces on int {
   String get priceString {
     final integerPart = toString();
     final sb = StringBuffer();
-    for (int i = 0; i < integerPart.length; i++) {
+    final intStrLen = integerPart.length;
+    for (int i = 0; i < intStrLen; i++) {
       sb.write(integerPart[i]);
 
-      if ((integerPart.length - i) % 3 == 1 && i != integerPart.length - 1) {
+      if ((intStrLen - i) % 3 == 1 && i != intStrLen - 1) {
         sb.write(' '); // Добавляем пробел после каждой тройки цифр
       }
     }
@@ -19,10 +20,11 @@ extension SeparateDoubleWithSpaces on double {
   String get priceString {
     final [integerPart, fractionaPart] = toStringAsFixed(1).split('.');
     final sb = StringBuffer();
-    for (int i = 0; i < integerPart.length; i++) {
+    final intStrLen = integerPart.length;
+    for (int i = 0; i < intStrLen; i++) {
       sb.write(integerPart[i]);
 
-      if ((integerPart.length - i) % 3 == 1 && i != integerPart.length - 1) {
+      if ((intStrLen - i) % 3 == 1 && i != intStrLen - 1) {
         sb.write(' '); // Добавляем пробел после каждой тройки цифр
       }
     }

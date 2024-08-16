@@ -36,7 +36,7 @@ class _ControlButtonsState extends ConsumerState<ControlButtons> {
 
     // Двигатель включен, передаём текущее значение для регистра ARR
     ref.listen(currentSendProvider, (previous, next) async {
-      if (next != null) {
+      if (next != 0) {
         if (_timer != null) {
           // Если таймер в данный момент работает, сбрасываем его
           _timer!.cancel();
@@ -45,6 +45,7 @@ class _ControlButtonsState extends ConsumerState<ControlButtons> {
         _timer = Timer(const Duration(milliseconds: 100), () async {
           if (hid.open() == 0) {
             // Вычитаем 1 из значения для регистра ARR
+            next -= 1;
             await hid.write(Uint8List.fromList([0, /*reportId = */ 2, next >> 8, next & 0xFF, ...List.filled(5, 0)]));
           }
           // По окончании выполнения callback функции устанавливаем _timer в null

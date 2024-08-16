@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../provider/provider.dart';
 import '../../settings/extension.dart';
-import 'custom_text_input_formatter.dart';
-import 'function_text_field.dart';
+import 'input_formatter_for_int.dart';
+import 'functions_for_text_field.dart';
 
 class PscField extends ConsumerStatefulWidget {
   const PscField({super.key});
@@ -71,7 +71,7 @@ class _PscFieldState extends ConsumerState<PscField> {
             ),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-              CustomTextInputFormatter(),
+              InputFormatterForInt(),
             ],
             onChanged: (value) {
               if (pscError != null) {
@@ -102,8 +102,8 @@ class _PscFieldState extends ConsumerState<PscField> {
     final value = int.tryParse(text);
     if (value == null) {
       ref.read(pscErrorProvider.notifier).state = 'Ошибка преобразования';
-    } else if (value < 0 || value > 65535) {
-      ref.read(pscErrorProvider.notifier).state = '0 \u2264 значение \u2264 65535';
+    } else if (value < 1 || value > 65535) {
+      ref.read(pscErrorProvider.notifier).state = '1 \u2264 значение \u2264 65535';
     } else {
       // Отбрасываем начальные нули, добавляем для отделения тысячей, пробелы
       final intToStr = SeparateIntWithSpaces(value).priceString;
